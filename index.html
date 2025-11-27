@@ -3,9 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FinançasPro V9</title>
+    <title>FinançasPro V10 Modern UI</title>
     
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
     <script>window.process = { env: { NODE_ENV: 'production' } };</script>
     <script type="importmap">
     {
@@ -21,34 +26,112 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <style>
-        body { background-color: #09090b; color: #f4f4f5; -webkit-tap-highlight-color: transparent; }
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #18181b; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #10b981; border-radius: 4px; }
-        #loader { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #09090b; z-index: 50; }
-        .spinner { width: 40px; height: 40px; border: 4px solid #10b981; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; }
+        /* BASE SETTINGS */
+        :root {
+            --bg-dark: #050505;
+            --bg-card: rgba(24, 24, 27, 0.6);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --accent-glow: rgba(16, 185, 129, 0.15);
+        }
+
+        body { 
+            background-color: var(--bg-dark); 
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(79, 70, 229, 0.08), transparent 25%), 
+                radial-gradient(circle at 85% 30%, rgba(16, 185, 129, 0.08), transparent 25%);
+            background-attachment: fixed;
+            color: #f4f4f5; 
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent; 
+        }
+
+        /* SCROLLBAR */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+        /* LOADER */
+        #loader { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #000; z-index: 9999; }
+        .loader-ring { width: 48px; height: 48px; border: 4px solid rgba(16, 185, 129, 0.3); border-top-color: #10b981; border-radius: 50%; animation: spin 0.8s ease-in-out infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ANIMATIONS */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes zoomIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 15px rgba(16, 185, 129, 0); }
+            50% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.3); }
+        }
+
+        .anim-enter { animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+        .anim-zoom { animation: zoomIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         
-        .card-gradient-1 { background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); }
-        .card-gradient-2 { background: linear-gradient(135deg, #ea580c 0%, #f97316 100%); }
-        .card-gradient-3 { background: linear-gradient(135deg, #0f172a 0%, #334155 100%); }
-        .card-gradient-4 { background: linear-gradient(135deg, #15803d 0%, #10b981 100%); }
-        
+        .delay-100 { animation-delay: 0.1s; }
+        .delay-200 { animation-delay: 0.2s; }
+        .delay-300 { animation-delay: 0.3s; }
+
+        /* MODERN UI UTILS */
+        .glass-panel {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        .glass-button {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(4px);
+            transition: all 0.3s ease;
+        }
+        .glass-button:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        .glass-button:active { transform: translateY(0); }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-primary:hover { box-shadow: 0 6px 20px rgba(16, 185, 129, 0.6); transform: translateY(-1px); }
+        .btn-primary::after {
+            content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transform: skewX(-20deg); transition: 0.5s;
+        }
+        .btn-primary:hover::after { left: 150%; transition: 0.7s; }
+
+        /* CARD GRADIENTS */
+        .card-gradient-1 { background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%); }
+        .card-gradient-2 { background: linear-gradient(135deg, #f97316 0%, #c2410c 100%); }
+        .card-gradient-3 { background: linear-gradient(135deg, #334155 0%, #0f172a 100%); }
+        .card-gradient-4 { background: linear-gradient(135deg, #10b981 0%, #047857 100%); }
+
         @media print {
-            body { background-color: white; color: black; }
-            aside, .no-print { display: none !important; }
-            main { margin: 0; padding: 0; }
-            .bg-zinc-900, .bg-zinc-800, .bg-zinc-100 { background-color: white !important; border: 1px solid #ddd !important; color: black !important; }
-            .text-zinc-400, .text-zinc-500 { color: #666 !important; }
-            .text-white { color: black !important; }
+            body { background-color: white; background-image: none; color: black; }
+            aside, .no-print, .glass-panel { box-shadow: none !important; backdrop-filter: none !important; background: white !important; color: black !important; border: 1px solid #ccc !important; }
         }
     </style>
 </head>
 <body>
     
     <div id="loader">
-        <div class="spinner"></div>
-        <p class="mt-4 text-emerald-500 font-medium">Carregando suas finanças...</p>
+        <div class="loader-ring"></div>
+        <p class="mt-4 text-zinc-400 font-medium tracking-wider text-sm uppercase">Carregando Sistema...</p>
     </div>
     <div id="root"></div>
 
@@ -56,10 +139,10 @@
         import React, { useState, useEffect, useMemo, useRef } from 'react';
         import { createRoot } from 'react-dom/client';
         import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, AreaChart, Area, CartesianGrid, XAxis, YAxis } from 'recharts';
-        import { LayoutDashboard, Wallet, ArrowUpCircle, ArrowDownCircle, Plus, Trash2, Calendar, CheckCircle, TrendingUp, DollarSign, FileText, Settings, Menu, X, Download, Upload, Save, Filter, Printer, Target, Edit2, AlertTriangle, CreditCard, Landmark, Sparkles } from 'lucide-react';
+        import { LayoutDashboard, Wallet, ArrowUpCircle, ArrowDownCircle, Plus, Trash2, Calendar, CheckCircle, TrendingUp, DollarSign, FileText, Settings, Menu, X, Download, Upload, Save, Filter, Printer, Target, Edit2, AlertTriangle, CreditCard, Landmark, Sparkles, ChevronDown, ChevronUp, Layers, ChevronLeft, ChevronRight, FileSpreadsheet, Moon, Sun } from 'lucide-react';
 
         function AppLoader({ children }) {
-            useEffect(() => { const l = document.getElementById('loader'); if(l) l.style.display = 'none'; }, []);
+            useEffect(() => { const l = document.getElementById('loader'); if(l) { l.style.opacity = '0'; setTimeout(() => l.style.display = 'none', 500); } }, []);
             return children;
         }
 
@@ -72,15 +155,34 @@
         const PAYMENT_METHODS = ['Cartão Crédito', 'Cartão Débito', 'Pix', 'Dinheiro', 'Boleto', 'Transferência'];
         const CARD_GRADIENTS = ['card-gradient-1', 'card-gradient-2', 'card-gradient-3', 'card-gradient-4'];
 
-        const CardWidget = ({ title, value, icon: Icon, type, subtitle }) => {
-            const color = type === 'income' ? 'text-emerald-500' : type === 'expense' ? 'text-red-500' : type === 'credit' ? 'text-purple-500' : type === 'neutral' ? 'text-blue-400' : 'text-emerald-400';
+        // --- HELPER FUNCTIONS ---
+        const calculateInvoiceDate = (purchaseDate, closingDay, dueDay, monthOffset = 0) => {
+            const date = new Date(purchaseDate + 'T12:00:00');
+            const day = date.getDate();
+            let month = date.getMonth(); 
+            let year = date.getFullYear();
+            if (day > closingDay) month++;
+            month += monthOffset;
+            const finalDate = new Date(year, month, dueDay);
+            return finalDate.toISOString().slice(0, 10);
+        };
+
+        const CardWidget = ({ title, value, icon: Icon, type, subtitle, delay }) => {
+            const colorClass = type === 'income' ? 'text-emerald-400' : type === 'expense' ? 'text-red-400' : type === 'credit' ? 'text-purple-400' : 'text-blue-400';
+            const bgClass = type === 'income' ? 'bg-emerald-500/10' : type === 'expense' ? 'bg-red-500/10' : type === 'credit' ? 'bg-purple-500/10' : 'bg-blue-500/10';
+            
             return (
-                <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl shadow-lg">
-                    <div className="flex justify-between items-start mb-2">
-                        <div><p className="text-zinc-400 text-sm font-medium">{title}</p><h3 className={`text-2xl font-bold mt-1 ${color}`}>{value}</h3></div>
-                        <div className={`p-3 rounded-xl bg-zinc-800 ${color} bg-opacity-10`}><Icon size={24} /></div>
+                <div className={`glass-panel p-6 rounded-2xl hover:border-zinc-700 transition-all duration-300 hover:-translate-y-1 anim-enter ${delay}`}>
+                    <div className="flex justify-between items-start mb-3">
+                        <div>
+                            <p className="text-zinc-500 text-xs font-semibold uppercase tracking-wider mb-1">{title}</p>
+                            <h3 className={`text-2xl font-bold ${colorClass} tracking-tight`}>{value}</h3>
+                        </div>
+                        <div className={`p-3 rounded-xl ${bgClass} ${colorClass} backdrop-blur-sm shadow-inner`}>
+                            <Icon size={22} />
+                        </div>
                     </div>
-                    {subtitle && <p className="text-xs text-zinc-500 mt-1">{subtitle}</p>}
+                    {subtitle && <div className="flex items-center gap-1 text-xs text-zinc-500 font-medium"><div className="w-1.5 h-1.5 rounded-full bg-zinc-600"></div> {subtitle}</div>}
                 </div>
             );
         };
@@ -88,39 +190,345 @@
         const Modal = ({ isOpen, onClose, title, children }) => {
             if (!isOpen) return null;
             return (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-                    <div className="bg-zinc-900 border border-zinc-800 w-full max-w-md rounded-2xl shadow-2xl flex flex-col max-h-[90vh] animate-[zoomIn_0.2s_ease-out]">
-                        <div className="flex justify-between items-center p-4 border-b border-zinc-800 bg-zinc-950 shrink-0">
-                            <h3 className="text-lg font-semibold text-emerald-500">{title}</h3>
-                            <button onClick={onClose} className="text-zinc-400 hover:text-white"><X size={20} /></button>
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-300">
+                    <div className="glass-panel w-full max-w-md rounded-2xl shadow-2xl flex flex-col max-h-[90vh] anim-zoom border-zinc-700/50">
+                        <div className="flex justify-between items-center p-5 border-b border-zinc-800/50 shrink-0">
+                            <h3 className="text-lg font-bold text-zinc-100 flex items-center gap-2">
+                                <span className="w-1 h-5 bg-emerald-500 rounded-full"></span>
+                                {title}
+                            </h3>
+                            <button onClick={onClose} className="text-zinc-500 hover:text-white transition-colors p-2 hover:bg-zinc-800 rounded-lg"><X size={18} /></button>
                         </div>
-                        <div className="p-6 overflow-y-auto custom-scrollbar grow text-zinc-200">{children}</div>
+                        <div className="p-6 overflow-y-auto custom-scrollbar grow text-zinc-300">{children}</div>
                     </div>
                 </div>
             );
         };
 
-        function FinanceAppV9() {
-            const [activeTab, setActiveTab] = useState('dashboard');
+        const Dashboard = ({ transactions, fixedBills, monthIncome, monthExpense, accountBalance, totalCreditUsed, currentMonth, openTxModal }) => {
+            const forecastData = useMemo(() => {
+                const [year, month] = currentMonth.split('-').map(Number);
+                const today = new Date();
+                const isCurrentMonth = today.getFullYear() === year && (today.getMonth() + 1) === month;
+                const daysInMonth = new Date(year, month, 0).getDate();
+                const daysPassed = isCurrentMonth ? today.getDate() : daysInMonth; 
+                const daysRemaining = daysInMonth - daysPassed;
+                const unpaidFixedTotal = fixedBills.filter(b => b.lastPaidMonth !== currentMonth).reduce((acc, b) => acc + b.value, 0);
+                const variableTxs = transactions.filter(t => t.date.startsWith(currentMonth) && t.category !== 'Contas Fixas' && t.category !== 'Pagamento de Fatura' && t.category !== 'Fatura Cartão' && t.type === 'expense');
+                const variableSpent = variableTxs.reduce((acc, t) => acc + t.value, 0);
+                const dailyAvg = daysPassed > 0 ? variableSpent / daysPassed : 0;
+                const projectedVariable = isCurrentMonth ? dailyAvg * daysRemaining : 0;
+                const totalForecast = monthExpense + unpaidFixedTotal + projectedVariable;
+                return { unpaidFixedTotal, dailyAvg, totalForecast, daysRemaining, isCurrentMonth };
+            }, [transactions, fixedBills, monthExpense, currentMonth]);
+
+            const dataChart = useMemo(() => {
+                const g = {};
+                transactions.filter(t => t.date.startsWith(currentMonth) && t.type === 'expense').forEach(t => g[t.category] = (g[t.category] || 0) + t.value);
+                return Object.keys(g).map(k => ({ name: k, value: g[k] })).sort((a,b) => b.value - a.value);
+            }, [transactions, currentMonth]);
+
+            const recentTxs = useMemo(() => transactions.filter(t => t.date.startsWith(currentMonth)).sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 5), [transactions, currentMonth]);
+
+            return (
+                <div className="space-y-6 pb-24 lg:pb-0">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <CardWidget title="Saldo em Conta" value={formatCurrency(accountBalance)} icon={Landmark} type={accountBalance >= 0 ? 'default' : 'expense'} subtitle="Líquido Disponível" delay="delay-0" />
+                        <CardWidget title="Faturas Abertas" value={formatCurrency(totalCreditUsed)} icon={CreditCard} type="credit" subtitle="Comprometido Futuro" delay="delay-100" />
+                        <CardWidget title={`Entradas (${getMonthName(currentMonth)})`} value={formatCurrency(monthIncome)} icon={ArrowUpCircle} type="income" delay="delay-200" />
+                        <CardWidget title={`Saídas (${getMonthName(currentMonth)})`} value={formatCurrency(monthExpense)} icon={ArrowDownCircle} type="expense" delay="delay-300" />
+                    </div>
+
+                    <div className="glass-panel border-zinc-800 rounded-2xl p-6 relative overflow-hidden anim-enter delay-300 group">
+                        <div className="absolute top-0 right-0 p-8 opacity-20 group-hover:opacity-30 transition-opacity duration-700 pointer-events-none transform translate-x-10 -translate-y-10 group-hover:translate-x-0 group-hover:translate-y-0"><Sparkles size={120} className="text-blue-500 blur-xl"/></div>
+                        <h3 className="text-blue-400 font-bold mb-6 flex items-center gap-2 relative z-10"><Sparkles size={18} className="animate-pulse"/> {forecastData.isCurrentMonth ? "Inteligência Financeira" : "Resumo do Período"}</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
+                            <div className="space-y-1">
+                                <p className="text-zinc-500 text-xs uppercase font-bold tracking-wider">Gasto Realizado</p>
+                                <p className="text-3xl text-zinc-100 font-bold">{formatCurrency(monthExpense)}</p>
+                            </div>
+                            <div className="space-y-1">
+                                <p className="text-zinc-500 text-xs uppercase font-bold tracking-wider">{forecastData.isCurrentMonth ? "Projeção Final" : "Total Final"}</p>
+                                <p className="text-3xl text-blue-400 font-bold drop-shadow-lg">{formatCurrency(forecastData.totalForecast)}</p>
+                                <p className="text-xs text-zinc-500 font-medium">{forecastData.isCurrentMonth ? "Baseado no seu padrão de consumo" : "Fechamento do mês"}</p>
+                            </div>
+                            <div className="bg-zinc-950/50 backdrop-blur-sm rounded-xl p-4 border border-zinc-800/50 shadow-inner">
+                                <div className="flex justify-between text-sm text-zinc-400 mb-2 border-b border-zinc-800/50 pb-2"><span>Fixas Pendentes:</span> <span className="font-bold text-zinc-200">{formatCurrency(forecastData.unpaidFixedTotal)}</span></div>
+                                <div className="flex justify-between text-sm text-zinc-400"><span>Média Diária:</span> <span className="font-bold text-emerald-400">{formatCurrency(forecastData.dailyAvg)}</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 anim-enter delay-200">
+                        <div className="glass-panel p-6 rounded-2xl min-h-[350px] flex flex-col">
+                            <h3 className="font-bold text-zinc-200 mb-6 flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-500"></div> Distribuição de Gastos</h3>
+                            {dataChart.length > 0 ? (
+                                <div className="grow -ml-4"><ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={dataChart} cx="50%" cy="50%" innerRadius={70} outerRadius={90} paddingAngle={4} dataKey="value" stroke="none">{dataChart.map((e, i) => <Cell key={i} fill={COLORS.chart[i % COLORS.chart.length]} />)}</Pie><Tooltip contentStyle={{background:'#09090b', border:'1px solid #27272a', borderRadius:'8px', boxShadow:'0 10px 30px rgba(0,0,0,0.5)'}} formatter={(v)=>formatCurrency(v)} /><Legend wrapperStyle={{paddingTop:'20px'}} /></PieChart></ResponsiveContainer></div>
+                            ) : <div className="flex flex-col items-center justify-center grow text-zinc-600 gap-2"><TrendingUp size={32} className="opacity-20"/><p>Sem dados neste mês.</p></div>}
+                        </div>
+                        <div className="glass-panel p-6 rounded-2xl">
+                            <h3 className="font-bold text-zinc-200 mb-6 flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-blue-500"></div> Últimas Atividades</h3>
+                            <div className="space-y-2">
+                                {recentTxs.length > 0 ? recentTxs.map((tx, i) => (
+                                    <div key={tx.id} className="flex justify-between items-center p-3 hover:bg-white/5 rounded-xl transition-all duration-300 border border-transparent hover:border-white/5 group cursor-pointer" style={{animationDelay: `${i*0.05}s`}} onClick={() => openTxModal(tx)}>
+                                        <div className="flex items-center gap-3">
+                                            <div className={`p-2 rounded-full ${tx.type==='income'?'bg-emerald-500/10 text-emerald-500':'bg-red-500/10 text-red-500'}`}>
+                                                {tx.type==='income'?<ArrowUpCircle size={16}/>:<ArrowDownCircle size={16}/>}
+                                            </div>
+                                            <div>
+                                                <p className="text-zinc-200 text-sm font-medium group-hover:text-white transition-colors">{tx.description}</p>
+                                                <p className="text-zinc-500 text-[11px] font-medium">{formatDate(tx.date)} • {tx.method} {tx.installmentNumber ? `(${tx.installmentNumber})` : ''}</p>
+                                            </div>
+                                        </div>
+                                        <span className={`text-sm font-bold ${tx.type === 'income' ? 'text-emerald-400' : 'text-red-400'}`}>{tx.type === 'income' ? '+' : '-'} {formatCurrency(tx.value)}</span>
+                                    </div>
+                                )) : <div className="text-center py-10 text-zinc-600 text-sm">Nenhuma atividade recente.</div>}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const CardsView = ({ cards, transactions, setEditingCard, setCardForm, setIsCardModalOpen, deleteCard, getCardStats, getCardInvoices, setInvoiceDetailModal, payInvoice }) => {
+            return (
+                <div className="space-y-6 pb-24 lg:pb-0 anim-enter">
+                    <div className="flex justify-between items-center glass-panel p-5 rounded-2xl">
+                        <div><h2 className="font-bold text-zinc-100 text-lg flex items-center gap-2"><Wallet size={20} className="text-emerald-500"/> Meus Cartões</h2><p className="text-zinc-500 text-xs font-medium mt-1">Gestão Inteligente de Crédito</p></div>
+                        <button onClick={() => { setEditingCard(null); setCardForm({gradient:'card-gradient-1'}); setIsCardModalOpen(true)}} className="btn-primary px-5 py-2.5 rounded-xl font-semibold text-white text-sm flex gap-2 items-center"><Plus size={18}/> Novo Cartão</button>
+                    </div>
+                    {cards.length === 0 ? <div className="text-center py-24 glass-panel rounded-2xl border-dashed border-2 border-zinc-800"><CreditCard size={48} className="mx-auto text-zinc-700 mb-4"/><p className="text-zinc-500 font-medium">Nenhum cartão cadastrado.</p></div> : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">{cards.map(card => { 
+                            const stats = getCardStats(card.id); 
+                            const invoices = getCardInvoices(card.id);
+                            const usagePercent = card.limit > 0 ? (stats.spent / card.limit) * 100 : 0; 
+                            return (
+                                <div key={card.id} className="glass-panel rounded-2xl overflow-hidden relative group flex flex-col hover:border-zinc-600/50 transition-all duration-300">
+                                    <div className={`p-6 ${card.gradient} text-white relative h-48 flex flex-col justify-between shrink-0 shadow-lg`}>
+                                        <div className="absolute inset-0 bg-black/10"></div>
+                                        <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl"></div>
+                                        <div className="flex justify-between items-start z-10">
+                                            <div><h3 className="font-bold text-xl tracking-wide drop-shadow-md">{card.name}</h3><p className="text-white/70 text-[10px] font-mono tracking-widest uppercase mt-1">**** **** **** {card.limit.toString().slice(0,4)}</p></div>
+                                            <CreditCard size={24} className="opacity-80"/>
+                                        </div>
+                                        <div className="z-10">
+                                            <div className="flex justify-between text-[10px] uppercase font-bold tracking-wider mb-2 opacity-90"><span>Fecha: {card.closingDay}</span><span>Vence: {card.dueDay}</span></div>
+                                            <div><p className="text-[10px] opacity-80 uppercase font-bold">Fatura Atual</p><p className="text-2xl font-bold drop-shadow-md">{formatCurrency(stats.spent)}</p></div>
+                                        </div>
+                                        <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 z-20 translate-x-2 group-hover:translate-x-0">
+                                            <button onClick={() => { setEditingCard(card); setCardForm(card); setIsCardModalOpen(true)}} className="bg-black/20 hover:bg-black/40 p-2 rounded-lg text-white backdrop-blur-md transition-colors"><Edit2 size={14}/></button>
+                                            <button onClick={() => deleteCard(card.id)} className="bg-black/20 hover:bg-red-500/80 p-2 rounded-lg text-white backdrop-blur-md transition-colors"><Trash2 size={14}/></button>
+                                        </div>
+                                    </div>
+                                    <div className="px-6 pt-5">
+                                        <div className="flex justify-between text-xs mb-2 text-zinc-400 font-medium"><span>Utilizado</span><span className="text-zinc-200">{usagePercent.toFixed(0)}%</span></div>
+                                        <div className="w-full bg-zinc-800/50 h-2.5 rounded-full overflow-hidden border border-zinc-800"><div className={`h-full ${usagePercent > 90 ? 'bg-red-500' : 'bg-blue-500'} transition-all duration-1000 ease-out`} style={{width: `${Math.min(100, usagePercent)}%`}}></div></div>
+                                        <div className="flex justify-between text-[11px] text-zinc-500 mt-2 font-medium"><span>Disp: {formatCurrency(stats.available)}</span><span>Lim: {formatCurrency(card.limit)}</span></div>
+                                    </div>
+                                    <div className="p-5 flex-1 flex flex-col">
+                                        <h4 className="text-zinc-500 text-[10px] font-bold uppercase tracking-wider mb-3 flex items-center gap-2"><Layers size={12}/> Próximas Faturas</h4>
+                                        <div className="space-y-2 flex-1 overflow-y-auto max-h-[180px] custom-scrollbar pr-1">
+                                            {invoices.length === 0 ? <p className="text-emerald-500/80 text-xs text-center py-6 font-medium bg-emerald-500/5 rounded-lg border border-emerald-500/10">Tudo em dia! 🎉</p> : (
+                                                invoices.map((inv, idx) => (
+                                                    <div key={inv.month} className={`flex justify-between items-center p-3 rounded-xl border transition-all duration-300 ${idx===0 ? 'bg-zinc-800/60 border-emerald-500/20 shadow-lg' : 'bg-transparent border-zinc-800/50 hover:bg-zinc-800/30'}`}>
+                                                        <div><p className={`text-xs font-bold ${idx===0 ? 'text-emerald-400' : 'text-zinc-300'}`}>{getMonthName(inv.month)}</p><p className="text-[10px] text-zinc-500 font-medium">{inv.items.length} itens</p></div>
+                                                        <div className="text-right">
+                                                            <p className="text-xs font-bold text-zinc-200">{formatCurrency(inv.total)}</p>
+                                                            <div className="flex gap-2 justify-end mt-1.5">
+                                                                <button onClick={() => setInvoiceDetailModal({ ...inv, cardId: card.id, cardName: card.name })} className="text-[10px] text-blue-400 hover:text-blue-300 font-medium hover:underline">Ver Detalhes</button>
+                                                                {idx === 0 && <button onClick={() => payInvoice(card.id, inv.total, inv.month)} className="text-[10px] bg-emerald-600 hover:bg-emerald-500 text-white px-2.5 py-1 rounded-md shadow-md transition-all font-bold">Pagar</button>}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            ); 
+                        })}</div>
+                    )}
+                </div>
+            );
+        };
+
+        const GoalsPanel = ({ categories, goals, transactions, currentMonth, onUpdateGoal }) => {
+            const currentMonthExpenses = useMemo(() => {
+                const g = {};
+                transactions.filter(t => t.date.startsWith(currentMonth) && t.type === 'expense').forEach(t => g[t.category] = (g[t.category] || 0) + t.value);
+                return g;
+            }, [transactions, currentMonth]);
+
+            return (
+                <div className="space-y-6 pb-24 lg:pb-0 anim-enter">
+                    <div className="glass-panel p-5 rounded-2xl flex justify-between items-center">
+                        <div><h2 className="font-bold text-zinc-100 mb-1 flex items-center gap-2"><Target className="text-emerald-500" size={20}/> Metas Mensais</h2><p className="text-xs text-zinc-500 font-medium">Controle Orçamentário</p></div>
+                        <div className="text-right"><span className="text-xs font-bold text-zinc-500 uppercase bg-zinc-800 px-2 py-1 rounded-md">{getMonthName(currentMonth)}</span></div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {categories.map((cat, idx) => {
+                            const goal = goals[cat] || 0;
+                            const spent = currentMonthExpenses[cat] || 0;
+                            const percent = goal > 0 ? (spent / goal) * 100 : 0;
+                            let barColor = 'bg-emerald-500';
+                            if(percent > 80) barColor = 'bg-yellow-500';
+                            if(percent > 100) barColor = 'bg-red-500';
+                            
+                            return (
+                                <div key={cat} className="glass-panel p-5 rounded-2xl hover:border-zinc-600 transition-all duration-300" style={{animationDelay: `${idx*0.05}s`}}>
+                                    <div className="flex justify-between mb-3 items-center">
+                                        <span className="font-bold text-zinc-200 text-sm flex items-center gap-2">{cat} {percent > 100 && <AlertTriangle size={14} className="text-red-500 animate-pulse"/>}</span>
+                                        <input type="number" placeholder="Definir" className="bg-zinc-950/50 border border-zinc-800 w-24 text-right text-xs font-medium rounded-lg p-1.5 text-zinc-300 outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20 transition-all" value={goal || ''} onChange={(e) => onUpdateGoal(cat, e.target.value)} />
+                                    </div>
+                                    <div className="flex justify-between text-[11px] text-zinc-500 mb-2 font-medium"><span>Gasto: <span className="text-zinc-300">{formatCurrency(spent)}</span></span><span className={goal - spent < 0 ? "text-red-400 font-bold" : "text-emerald-400 font-bold"}>{goal - spent < 0 ? `Excedeu ${formatCurrency(Math.abs(goal-spent))}` : `Resta: ${formatCurrency(goal - spent)}`}</span></div>
+                                    <div className="w-full bg-zinc-800 h-2 rounded-full overflow-hidden shadow-inner"><div className={`h-full ${barColor} transition-all duration-1000 ease-out`} style={{ width: `${Math.min(100, percent)}%` }}></div></div>
+                                </div>
+                            ) 
+                        })}
+                    </div>
+                </div>
+            );
+        };
+
+        const Trans = ({ transactions, deleteTx, openTxModal, currentMonth }) => {
+            const [ft, setFt] = useState('');
+            const fTx = useMemo(() => transactions.filter(t => t.date.startsWith(currentMonth) && t.description.toLowerCase().includes(ft.toLowerCase())).sort((a,b)=>new Date(b.date)-new Date(a.date)), [transactions, ft, currentMonth]);
+            return ( 
+                <div className="space-y-6 pb-24 lg:pb-0 anim-enter">
+                    <div className="flex gap-3">
+                        <div className="relative w-full">
+                            <input type="text" placeholder="Buscar lançamentos..." value={ft} onChange={e=>setFt(e.target.value)} className="w-full bg-zinc-900/50 border border-zinc-800 text-zinc-200 p-3 pl-10 rounded-xl outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20 transition-all text-sm backdrop-blur-sm" />
+                            <Filter size={16} className="absolute left-3 top-3.5 text-zinc-500"/>
+                        </div>
+                        <button onClick={()=>openTxModal()} className="btn-primary w-12 flex items-center justify-center rounded-xl text-white shrink-0"><Plus size={20}/></button>
+                    </div>
+                    {fTx.length === 0 ? <div className="text-center py-20 opacity-50"><FileText size={48} className="mx-auto mb-4 text-zinc-600"/><p>Nenhum registro encontrado.</p></div> : 
+                    <div className="glass-panel rounded-2xl overflow-hidden shadow-2xl">
+                        <table className="w-full text-left border-collapse">
+                            <tbody className="divide-y divide-zinc-800/50">
+                                {fTx.map((tx, i) => (
+                                    <tr key={tx.id} onClick={() => openTxModal(tx)} className="hover:bg-white/5 cursor-pointer transition-colors group animate-in slide-in-from-bottom-2 duration-300" style={{animationDelay: `${i*0.05}s`}}>
+                                        <td className="p-4 pl-6">
+                                            <div className="text-zinc-200 font-semibold text-sm group-hover:text-white transition-colors">{tx.description}</div>
+                                            <div className="text-zinc-500 text-[11px] font-medium mt-0.5 flex items-center gap-2">
+                                                <span className="bg-zinc-800/50 px-1.5 py-0.5 rounded border border-zinc-800">{formatDate(tx.date)}</span>
+                                                <span>{tx.method}</span>
+                                                {tx.cardId && <span className="text-purple-400 text-[10px] uppercase font-bold px-1.5 py-0.5 bg-purple-500/10 rounded">Crédito</span>}
+                                                {tx.installmentNumber && <span className="text-blue-400 text-[10px] font-bold px-1.5 py-0.5 bg-blue-500/10 rounded border border-blue-500/20">{tx.installmentNumber}</span>}
+                                            </div>
+                                        </td>
+                                        <td className={`p-4 text-right font-bold text-sm ${tx.type==='income'?'text-emerald-400':'text-red-400'}`}>{tx.type==='income'?'+':'-'} {formatCurrency(tx.value)}</td>
+                                        <td className="p-4 text-right w-16 pr-6">
+                                            <button onClick={(e)=>{e.stopPropagation();deleteTx(tx.id)}} className="text-zinc-600 hover:text-red-500 hover:bg-red-500/10 p-2 rounded-lg transition-all opacity-0 group-hover:opacity-100"><Trash2 size={16}/></button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>}
+                </div> 
+            ); 
+        };
+
+        const Reports = ({ transactions, currentMonth, availMonths, setFilterMonth }) => {
+            const mData = useMemo(() => { 
+                const txs = transactions.filter(t => t.date.startsWith(currentMonth)); 
+                const inc = txs.filter(t => t.type === 'income').reduce((a,t)=>a+t.value,0); 
+                const exp = txs.filter(t => t.type === 'expense' && !t.isInvoicePayment).reduce((a,t)=>a+t.value,0); 
+                const bal = inc - exp; 
+                const cats = {}; 
+                txs.filter(t => t.type === 'expense').forEach(t => cats[t.category] = (cats[t.category]||0) + t.value); 
+                const sortedCats = Object.entries(cats).map(([k,v])=>({name:k, value:v})).sort((a,b)=>b.value-a.value); 
+                return { txs, inc, exp, bal, sortedCats }; 
+            }, [transactions, currentMonth]);
             
+            return (
+                <div className="max-w-4xl mx-auto space-y-6 pb-24 lg:pb-0 anim-enter">
+                    <div className="flex justify-between items-center glass-panel p-5 rounded-2xl border-l-4 border-l-emerald-500 no-print">
+                        <h2 className="font-bold text-zinc-100 text-lg">Relatório Mensal</h2>
+                        <button onClick={() => window.print()} className="glass-button p-2.5 rounded-xl text-zinc-400 hover:text-white"><Printer size={20}/></button>
+                    </div>
+                    <div className="bg-zinc-100 rounded-3xl overflow-hidden shadow-2xl print-border relative group">
+                        <div className={`p-8 text-white relative overflow-hidden ${mData.bal >= 0 ? 'bg-gradient-to-br from-emerald-600 to-teal-700' : 'bg-gradient-to-br from-red-600 to-orange-700'}`}>
+                            <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
+                            <p className="opacity-80 text-xs uppercase font-bold tracking-widest mb-1">Resultado Líquido</p>
+                            <h3 className="text-4xl font-bold tracking-tight">{formatCurrency(mData.bal)}</h3>
+                        </div>
+                        <div className="p-6 grid grid-cols-2 gap-6 border-b border-zinc-200 bg-white">
+                            <div className="text-center p-4 bg-zinc-50 rounded-2xl"><p className="text-zinc-400 text-xs uppercase font-bold tracking-wider mb-1">Entradas</p><p className="text-emerald-600 font-bold text-xl">{formatCurrency(mData.inc)}</p></div>
+                            <div className="text-center p-4 bg-zinc-50 rounded-2xl"><p className="text-zinc-400 text-xs uppercase font-bold tracking-wider mb-1">Saídas</p><p className="text-red-600 font-bold text-xl">{formatCurrency(mData.exp)}</p></div>
+                        </div>
+                        <div className="p-8 bg-white text-zinc-800">
+                            <h4 className="font-bold mb-6 flex items-center gap-2 text-zinc-700"><Layers size={18} className="text-zinc-400"/> Top Categorias</h4>
+                            {mData.sortedCats.map((c,i) => (
+                                <div key={c.name} className="flex items-center gap-4 mb-4 group/item">
+                                    <span className="text-zinc-300 text-xs font-bold w-4">{i+1}</span>
+                                    <div className="flex-1">
+                                        <div className="flex justify-between text-sm mb-1.5"><span className="font-semibold text-zinc-700">{c.name}</span><span className="font-bold text-zinc-900">{formatCurrency(c.value)}</span></div>
+                                        <div className="w-full bg-zinc-100 h-2.5 rounded-full overflow-hidden"><div className="h-full bg-emerald-500 rounded-full group-hover/item:bg-emerald-400 transition-colors" style={{width: `${(c.value/mData.exp)*100}%`}}></div></div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const Fixed = ({ fixedBills, deleteFixed, setEditingFixed, setFixedForm, setIsFixedModalOpen, payFixed, currentMonth }) => ( 
+            <div className="space-y-6 pb-24 lg:pb-0 anim-enter">
+                <div className="flex justify-between items-center glass-panel p-5 rounded-2xl">
+                    <h2 className="text-lg font-bold text-zinc-100 flex items-center gap-2"><Calendar className="text-emerald-500" size={20}/> Contas Fixas</h2>
+                    <button onClick={()=>setIsFixedModalOpen(true)} className="btn-primary w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-lg"><Plus size={20}/></button>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {fixedBills.map((b, idx) => { 
+                        const isPaid = b.lastPaidMonth === currentMonth; 
+                        const isOverdue = !isPaid && parseInt(b.dueDay) < new Date().getDate() && new Date().toISOString().slice(0,7) === currentMonth; 
+                        return (
+                            <div key={b.id} className={`glass-panel p-5 rounded-2xl relative transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${isPaid ? 'border-emerald-500/30' : isOverdue ? 'border-red-500/30' : ''}`} style={{animationDelay: `${idx*0.05}s`}}>
+                                {isPaid && <div className="absolute top-4 right-4 bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 text-[10px] font-bold px-2 py-1 rounded-lg uppercase tracking-wide flex items-center gap-1"><CheckCircle size={10}/> Pago</div>}
+                                {isOverdue && <div className="absolute top-4 right-4 bg-red-500/20 text-red-400 border border-red-500/20 text-[10px] font-bold px-2 py-1 rounded-lg uppercase tracking-wide flex items-center gap-1"><AlertTriangle size={10}/> Atrasado</div>}
+                                <div className="flex justify-between mb-3 mt-1">
+                                    <div className={`p-2 rounded-xl ${isOverdue ? "bg-red-500/10 text-red-500" : "bg-zinc-800 text-zinc-400"}`}><Calendar size={18}/></div>
+                                    <div className="flex gap-1">
+                                        <button onClick={()=>{setEditingFixed(b);setFixedForm(b);setIsFixedModalOpen(true)}} className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors"><Edit2 size={16}/></button>
+                                        <button onClick={()=>deleteFixed(b.id)} className="p-2 text-zinc-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"><Trash2 size={16}/></button>
+                                    </div>
+                                </div>
+                                <h3 className="font-bold text-lg text-zinc-100 mb-1">{b.name}</h3>
+                                <div className="flex items-center gap-2 text-xs text-zinc-500 font-medium mb-4"><span className="bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-400">Dia {b.dueDay}</span> <span>{b.category}</span></div>
+                                <div className="flex justify-between items-center pt-4 border-t border-zinc-800/50">
+                                    <span className="text-emerald-400 font-bold text-lg">{formatCurrency(b.value)}</span>
+                                    {!isPaid ? <button onClick={()=>payFixed(b)} className="bg-zinc-200 hover:bg-white text-black px-4 py-1.5 rounded-lg text-xs font-bold shadow-lg transition-all transform hover:scale-105">Pagar</button> : <span className="text-zinc-600 text-xs font-medium italic">Pago em {getMonthName(currentMonth)}</span>}
+                                </div>
+                            </div>
+                        ); 
+                    })}
+                </div>
+            </div> 
+        );
+
+        function FinanceAppV10() {
+            const [activeTab, setActiveTab] = useState('dashboard');
+            const [viewDate, setViewDate] = useState(new Date()); 
+            const currentMonth = useMemo(() => viewDate.toISOString().slice(0, 7), [viewDate]);
             const [initialBalance, setInitialBalance] = useState(() => parseFloat(localStorage.getItem('initialBalance_v8')) || 0);
             const [transactions, setTransactions] = useState(() => JSON.parse(localStorage.getItem('transactions_v8')) || []);
             const [fixedBills, setFixedBills] = useState(() => JSON.parse(localStorage.getItem('fixedBills_v8')) || []);
             const [categories, setCategories] = useState(() => JSON.parse(localStorage.getItem('categories_v8')) || INITIAL_CATS);
             const [goals, setGoals] = useState(() => JSON.parse(localStorage.getItem('goals_v8')) || {});
             const [cards, setCards] = useState(() => JSON.parse(localStorage.getItem('cards_v8')) || []);
-
             const [isTxModalOpen, setIsTxModalOpen] = useState(false);
             const [isFixedModalOpen, setIsFixedModalOpen] = useState(false);
             const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
             const [isCardModalOpen, setIsCardModalOpen] = useState(false);
             const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-            
+            const [invoiceDetailModal, setInvoiceDetailModal] = useState(null);
             const [editingTx, setEditingTx] = useState(null);
             const [editingFixed, setEditingFixed] = useState(null);
             const [editingCard, setEditingCard] = useState(null);
-
-            const [txForm, setTxForm] = useState({});
+            const [txForm, setTxForm] = useState({ installments: 1, interestRate: 0, showInstallmentValue: false });
             const [fixedForm, setFixedForm] = useState({ category: 'Contas Fixas' });
             const [cardForm, setCardForm] = useState({ gradient: 'card-gradient-1' });
             const [newCategory, setNewCategory] = useState('');
@@ -135,13 +543,25 @@
                 localStorage.setItem('cards_v8', JSON.stringify(cards));
             }, [transactions, fixedBills, categories, initialBalance, goals, cards]);
 
-            const currentMonth = new Date().toISOString().slice(0, 7);
             const todayStr = new Date().toISOString().slice(0, 10);
-            
             const realIncome = transactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.value, 0);
             const realExpense = transactions.filter(t => t.type === 'expense' && (t.method !== 'Cartão Crédito' || t.isInvoicePayment)).reduce((acc, t) => acc + t.value, 0);
             const accountBalance = initialBalance + realIncome - realExpense;
+            const monthTransactions = transactions.filter(t => t.date.startsWith(currentMonth));
+            const monthIncome = monthTransactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.value, 0);
+            const monthExpense = monthTransactions.filter(t => t.type === 'expense' && !t.isInvoicePayment).reduce((acc, t) => acc + t.value, 0);
 
+            const getCardInvoices = (cardId) => {
+                const cardTxs = transactions.filter(t => t.cardId === cardId && t.type === 'expense' && !t.isInvoicePayment && !t.isPaid);
+                const invoices = {};
+                cardTxs.forEach(tx => {
+                    const monthKey = tx.date.slice(0, 7); 
+                    if (!invoices[monthKey]) invoices[monthKey] = { total: 0, items: [] };
+                    invoices[monthKey].total += tx.value;
+                    invoices[monthKey].items.push(tx);
+                });
+                return Object.entries(invoices).map(([month, data]) => ({ month, total: data.total, items: data.items })).sort((a, b) => a.month.localeCompare(b.month));
+            };
             const getCardStats = (cardId) => {
                 const cardTxs = transactions.filter(t => t.cardId === cardId && t.type === 'expense' && !t.isInvoicePayment && !t.isPaid);
                 const totalSpent = cardTxs.reduce((acc, t) => acc + t.value, 0);
@@ -149,246 +569,175 @@
                 return { spent: totalSpent, available: card ? card.limit - totalSpent : 0 };
             };
             const totalCreditUsed = cards.reduce((acc, card) => acc + getCardStats(card.id).spent, 0);
-
-            const monthTransactions = transactions.filter(t => t.date.startsWith(currentMonth));
-            const monthIncome = monthTransactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.value, 0);
-            const monthExpense = monthTransactions.filter(t => t.type === 'expense' && !t.isInvoicePayment).reduce((acc, t) => acc + t.value, 0);
+            const changeMonth = (offset) => { setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + offset, 1)); };
 
             const handleSaveTx = (e) => {
-                e.preventDefault();
-                const val = parseFloat(txForm.value);
-                if (!txForm.description || isNaN(val)) return;
-                const newTx = { id: editingTx ? editingTx.id : Date.now(), ...txForm, value: val, isPaid: txForm.method !== 'Cartão Crédito', cardId: txForm.method === 'Cartão Crédito' ? parseInt(txForm.cardId) : null };
-                setTransactions(editingTx ? transactions.map(t => t.id === editingTx.id ? newTx : t) : [newTx, ...transactions]);
-                setIsTxModalOpen(false);
+                e.preventDefault(); const baseValue = parseFloat(txForm.value); if (!txForm.description || isNaN(baseValue)) return;
+                if (txForm.method === 'Cartão Crédito' && txForm.cardId) {
+                    const card = cards.find(c => c.id === parseInt(txForm.cardId)); if (!card) { alert("Cartão não encontrado"); return; }
+                    const numInstallments = parseInt(txForm.installments) || 1; const interest = parseFloat(txForm.interestRate) || 0;
+                    const totalValueWithInterest = baseValue + (baseValue * (interest / 100)); const installmentValue = totalValueWithInterest / numInstallments;
+                    const newTxs = []; const baseId = editingTx ? editingTx.id : Date.now();
+                    if (!editingTx) {
+                        for (let i = 0; i < numInstallments; i++) {
+                            const invoiceDate = calculateInvoiceDate(txForm.date, parseInt(card.closingDay), parseInt(card.dueDay), i);
+                            newTxs.push({ id: baseId + i, description: numInstallments > 1 ? `${txForm.description} (${i+1}/${numInstallments})` : txForm.description, value: installmentValue, type: 'expense', category: txForm.category, method: 'Cartão Crédito', cardId: parseInt(txForm.cardId), date: invoiceDate, installmentNumber: numInstallments > 1 ? `${i+1} de ${numInstallments}` : null, isPaid: false, isInvoicePayment: false });
+                        } setTransactions([...newTxs, ...transactions]);
+                    } else {
+                        const updatedTx = { ...editingTx, ...txForm, value: baseValue, cardId: parseInt(txForm.cardId) };
+                        if (txForm.method === 'Cartão Crédito') updatedTx.date = calculateInvoiceDate(txForm.date, parseInt(card.closingDay), parseInt(card.dueDay), 0);
+                        setTransactions(transactions.map(t => t.id === editingTx.id ? updatedTx : t));
+                    }
+                } else {
+                    const newTx = { id: editingTx ? editingTx.id : Date.now(), ...txForm, value: baseValue, isPaid: txForm.type === 'expense' ? true : false, cardId: null, installments: null };
+                    if (newTx.type === 'expense') newTx.isPaid = true;
+                    setTransactions(editingTx ? transactions.map(t => t.id === editingTx.id ? newTx : t) : [newTx, ...transactions]);
+                } setIsTxModalOpen(false);
             };
-
-            const handleSaveCard = (e) => {
-                e.preventDefault();
-                const newCard = { id: editingCard ? editingCard.id : Date.now(), ...cardForm, limit: parseFloat(cardForm.limit) };
-                setCards(editingCard ? cards.map(c => c.id === editingCard.id ? newCard : c) : [...cards, newCard]);
-                setIsCardModalOpen(false); setEditingCard(null); setCardForm({ gradient: 'card-gradient-1' });
-            };
-
+            const handleSaveCard = (e) => { e.preventDefault(); const newCard = { id: editingCard ? editingCard.id : Date.now(), ...cardForm, limit: parseFloat(cardForm.limit) }; setCards(editingCard ? cards.map(c => c.id === editingCard.id ? newCard : c) : [...cards, newCard]); setIsCardModalOpen(false); setEditingCard(null); setCardForm({ gradient: 'card-gradient-1' }); };
             const deleteCard = (id) => { if(confirm("Excluir cartão?")) setCards(cards.filter(c => c.id !== id)); }
-
-            const payInvoice = (cardId, amount) => {
-                if(!confirm(`Pagar fatura?`)) return;
-                const paymentTx = { id: Date.now(), description: `Pagamento Fatura`, value: amount, type: 'expense', category: 'Fatura Cartão', date: todayStr, method: 'Pix', isInvoicePayment: true, cardId: cardId };
-                const updatedTxs = transactions.map(t => { if (t.cardId === cardId && t.method === 'Cartão Crédito' && !t.isPaid) return { ...t, isPaid: true }; return t; });
-                setTransactions([paymentTx, ...updatedTxs]);
+            const payInvoice = (cardId, amount, monthKey) => {
+                const card = cards.find(c => c.id === cardId); const monthName = getMonthName(monthKey);
+                if(!confirm(`Pagar fatura de ${monthName} no valor de ${formatCurrency(amount)}?`)) return;
+                const paymentTx = { id: Date.now(), description: `Fatura ${card.name} - ${monthName}`, value: amount, type: 'expense', category: 'Fatura Cartão', date: todayStr, method: 'Pix', isInvoicePayment: true, cardId: cardId };
+                const updatedTxs = transactions.map(t => { if (t.cardId === cardId && t.method === 'Cartão Crédito' && !t.isPaid && t.date.startsWith(monthKey)) { return { ...t, isPaid: true }; } return t; });
+                setTransactions([paymentTx, ...updatedTxs]); if(invoiceDetailModal) setInvoiceDetailModal(null);
             };
-
             const deleteTx = (id) => setTransactions(transactions.filter(t => t.id !== id));
-            const openTxModal = (tx) => { setEditingTx(tx); setTxForm(tx || { description: '', value: '', type: 'expense', category: categories[0], date: todayStr, method: 'Cartão Débito' }); setIsTxModalOpen(true); };
+            const openTxModal = (tx) => { setEditingTx(tx); setTxForm(tx || { description: '', value: '', type: 'expense', category: categories[0], date: todayStr, method: 'Cartão Débito', installments: 1, interestRate: 0, showInstallmentValue: false }); setIsTxModalOpen(true); };
             const handleSaveFixed = (e) => { e.preventDefault(); const cat = fixedForm.category || 'Contas Fixas'; const newBill = { id: editingFixed ? editingFixed.id : Date.now(), ...fixedForm, value: parseFloat(fixedForm.value), category: cat, lastPaidMonth: editingFixed ? editingFixed.lastPaidMonth : null }; setFixedBills(editingFixed ? fixedBills.map(b => b.id === editingFixed.id ? newBill : b) : [...fixedBills, newBill]); setIsFixedModalOpen(false); setEditingFixed(null); setFixedForm({ category: 'Contas Fixas' }); };
             const deleteFixed = (id) => setFixedBills(fixedBills.filter(b => b.id !== id));
             const payFixed = (bill) => { const cat = bill.category || 'Contas Fixas'; const newTx = { id: Date.now(), description: `Pgto. ${bill.name}`, value: bill.value, type: 'expense', category: cat, date: todayStr, method: 'Boleto', isPaid: true }; setTransactions([newTx, ...transactions]); setFixedBills(fixedBills.map(b => b.id === bill.id ? { ...b, lastPaidMonth: currentMonth } : b)); };
             const handleUpdateGoal = (cat, val) => setGoals(prev => ({ ...prev, [cat]: parseFloat(val) }));
-            
-            const handleExport = () => { const data = JSON.stringify({ initialBalance, transactions, fixedBills, categories, goals, cards, v: '8' }); const blob = new Blob([data], { type: 'application/json' }); const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = `backup_financas_${todayStr}.json`; document.body.appendChild(link); link.click(); document.body.removeChild(link); };
-            const handleImport = (e) => { const file = e.target.files[0]; if (!file) return; const r = new FileReader(); r.onload = (ev) => { try { const d = JSON.parse(ev.target.result); if (d.transactions && confirm('Restaurar?')) { setInitialBalance(d.initialBalance || 0); setTransactions(d.transactions || []); setFixedBills(d.fixedBills || []); setCategories(d.categories || INITIAL_CATS); setGoals(d.goals || {}); setCards(d.cards || []); alert('Ok!'); setIsConfigModalOpen(false); } } catch { alert('Erro.'); } }; r.readAsText(file); e.target.value = null; };
-
-            const CardsView = () => (
-                <div className="space-y-6 pb-24 lg:pb-0 animate-in fade-in">
-                    <div className="flex justify-between items-center bg-zinc-900 p-4 rounded-xl border border-zinc-800">
-                        <div><h2 className="font-bold text-emerald-500 text-lg">Cartões</h2><p className="text-zinc-400 text-xs">Gerencie limites</p></div>
-                        <button onClick={() => { setEditingCard(null); setCardForm({gradient:'card-gradient-1'}); setIsCardModalOpen(true)}} className="bg-emerald-600 text-white px-4 py-2 rounded-lg flex gap-2 items-center"><Plus size={18}/> Novo</button>
-                    </div>
-                    {cards.length === 0 ? <div className="text-center py-20 bg-zinc-900 border border-zinc-800 rounded-2xl border-dashed"><CreditCard size={48} className="mx-auto text-zinc-600 mb-4"/><p className="text-zinc-500">Sem cartões.</p></div> : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">{cards.map(card => { const stats = getCardStats(card.id); const usagePercent = card.limit > 0 ? (stats.spent / card.limit) * 100 : 0; return (<div key={card.id} className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden shadow-lg relative group"><div className={`p-6 ${card.gradient} text-white relative overflow-hidden h-48 flex flex-col justify-between`}><div className="flex justify-between items-start z-10"><div><h3 className="font-bold text-xl tracking-wide">{card.name}</h3><p className="text-white/70 text-xs">Crédito</p></div><CreditCard size={24} className="opacity-80"/></div><div className="z-10"><div className="flex justify-between text-xs mb-1 opacity-90"><span>Fechamento: {card.closingDay}</span><span>Vence: {card.dueDay}</span></div><div className="flex justify-between items-end"><div><p className="text-xs opacity-70">Fatura</p><p className="text-2xl font-bold">{formatCurrency(stats.spent)}</p></div>{stats.spent > 0 && <button onClick={() => payInvoice(card.id, stats.spent)} className="bg-white text-black px-3 py-1 rounded-lg text-xs font-bold hover:bg-zinc-200 shadow-lg">Pagar</button>}</div></div><div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-20"><button onClick={() => { setEditingCard(card); setCardForm(card); setIsCardModalOpen(true)}} className="bg-black/20 p-1 rounded text-white"><Edit2 size={14}/></button><button onClick={() => deleteCard(card.id)} className="bg-black/20 p-1 rounded text-white"><Trash2 size={14}/></button></div></div><div className="p-4"><div className="flex justify-between text-sm mb-1 text-zinc-400"><span>Uso</span><span>{usagePercent.toFixed(0)}%</span></div><div className="w-full bg-zinc-800 h-2 rounded-full overflow-hidden mb-2"><div className="h-full bg-blue-500" style={{width: `${Math.min(100, usagePercent)}%`}}></div></div><div className="flex justify-between text-xs text-zinc-500"><span>Disp: {formatCurrency(stats.available)}</span><span>Lim: {formatCurrency(card.limit)}</span></div></div></div>); })}</div>
-                    )}
-                </div>
-            );
-
-            const Dashboard = () => {
-                // LÓGICA DE PREVISÃO V9
-                const forecastData = useMemo(() => {
-                    const today = new Date();
-                    const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
-                    const daysPassed = today.getDate();
-                    const daysRemaining = daysInMonth - daysPassed;
-
-                    // 1. Fixas Pendentes
-                    const unpaidFixedTotal = fixedBills.filter(b => b.lastPaidMonth !== currentMonth).reduce((acc, b) => acc + b.value, 0);
-
-                    // 2. Média Diária (Variável)
-                    // Filtrar gastos que não são contas fixas nem pagamento de fatura para achar a média de consumo espontâneo
-                    const variableTxs = monthTransactions.filter(t => 
-                        t.category !== 'Contas Fixas' && 
-                        t.category !== 'Pagamento de Fatura' && 
-                        t.category !== 'Fatura Cartão' &&
-                        t.type === 'expense'
-                    );
-                    const variableSpent = variableTxs.reduce((acc, t) => acc + t.value, 0);
-                    const dailyAvg = daysPassed > 0 ? variableSpent / daysPassed : 0;
-                    const projectedVariable = dailyAvg * daysRemaining;
-
-                    // 3. Total Forecast
-                    const totalForecast = monthExpense + unpaidFixedTotal + projectedVariable;
-
-                    return { unpaidFixedTotal, dailyAvg, totalForecast, daysRemaining };
-                }, [monthTransactions, fixedBills, monthExpense]);
-
-                const dataChart = useMemo(() => {
-                    const g = {};
-                    monthTransactions.filter(t => t.type === 'expense').forEach(t => g[t.category] = (g[t.category] || 0) + t.value);
-                    return Object.keys(g).map(k => ({ name: k, value: g[k] })).sort((a,b) => b.value - a.value);
-                }, [transactions]);
-
-                return (
-                    <div className="space-y-6 pb-24 lg:pb-0 animate-in fade-in">
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                            <CardWidget title="Saldo em Conta" value={formatCurrency(accountBalance)} icon={Landmark} type={accountBalance >= 0 ? 'default' : 'expense'} subtitle="Líquido" />
-                            <CardWidget title="Faturas Abertas" value={formatCurrency(totalCreditUsed)} icon={CreditCard} type="credit" subtitle="A pagar" />
-                            <CardWidget title={`Entradas (${getMonthName(currentMonth)})`} value={formatCurrency(monthIncome)} icon={ArrowUpCircle} type="income" />
-                            <CardWidget title={`Saídas (${getMonthName(currentMonth)})`} value={formatCurrency(monthExpense)} icon={ArrowDownCircle} type="expense" />
-                        </div>
-
-                        {/* CARD DE PREVISÃO - NOVO V9 */}
-                        <div className="bg-gradient-to-br from-zinc-900 to-zinc-950 border border-zinc-800 rounded-2xl p-6 shadow-lg relative overflow-hidden">
-                            <div className="absolute top-0 right-0 p-4 opacity-10"><Sparkles size={100} className="text-blue-500"/></div>
-                            <h3 className="text-blue-400 font-bold mb-4 flex items-center gap-2"><Sparkles size={18}/> Estimativa do Mês</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
-                                <div>
-                                    <p className="text-zinc-500 text-xs uppercase font-bold">Gasto Atual</p>
-                                    <p className="text-2xl text-white font-bold">{formatCurrency(monthExpense)}</p>
-                                </div>
-                                <div>
-                                    <p className="text-zinc-500 text-xs uppercase font-bold">Previsão Final</p>
-                                    <p className="text-2xl text-blue-400 font-bold">{formatCurrency(forecastData.totalForecast)}</p>
-                                    <p className="text-xs text-zinc-500">Baseado no seu uso</p>
-                                </div>
-                                <div className="bg-black/20 rounded-lg p-3 border border-white/5">
-                                    <div className="flex justify-between text-sm text-zinc-300 mb-1"><span>Fixas Pendentes:</span> <span className="font-bold text-white">{formatCurrency(forecastData.unpaidFixedTotal)}</span></div>
-                                    <div className="flex justify-between text-sm text-zinc-300"><span>Média Diária:</span> <span className="font-bold text-white">{formatCurrency(forecastData.dailyAvg)}</span></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {transactions.length === 0 ? (
-                            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-10 text-center py-20">
-                                <LayoutDashboard size={48} className="mx-auto text-zinc-600 mb-4" /><h3 className="text-white font-bold mb-2">Bem-vindo à V9</h3><button onClick={() => openTxModal()} className="bg-emerald-600 text-white px-6 py-2 rounded-lg">Nova Movimentação</button>
-                            </div>
-                        ) : (
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl shadow-lg min-h-[300px]">
-                                    <h3 className="font-semibold text-emerald-500 mb-4">Gastos do Mês</h3>
-                                    {dataChart.length > 0 ? (
-                                        <div className="h-64"><ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={dataChart} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">{dataChart.map((e, i) => <Cell key={i} fill={COLORS.chart[i % COLORS.chart.length]} />)}</Pie><Tooltip contentStyle={{background:'#18181b', border:'1px solid #27272a'}} formatter={(v)=>formatCurrency(v)} /><Legend /></PieChart></ResponsiveContainer></div>
-                                    ) : <p className="text-zinc-500 text-center py-10">Sem dados.</p>}
-                                </div>
-                                <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl shadow-lg">
-                                    <h3 className="font-semibold text-emerald-500 mb-4">Últimas</h3>
-                                    <div className="space-y-3">
-                                        {monthTransactions.slice(0, 5).map(tx => (
-                                            <div key={tx.id} className="flex justify-between items-center p-2 hover:bg-zinc-800/50 rounded-lg">
-                                                <div><p className="text-zinc-200 text-sm font-medium">{tx.description}</p><p className="text-zinc-500 text-xs">{formatDate(tx.date)} • {tx.method}</p></div>
-                                                <span className={`text-sm font-bold ${tx.type === 'income' ? 'text-emerald-500' : 'text-red-500'}`}>{tx.type === 'income' ? '+' : '-'} {formatCurrency(tx.value)}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                );
-            };
-
-            const Reports = () => {
-                const [filterMonth, setFilterMonth] = useState(currentMonth);
-                const availMonths = useMemo(() => Array.from(new Set([...transactions.map(t => t.date.slice(0,7)), currentMonth])).sort().reverse(), [transactions]);
-                const mData = useMemo(() => { const txs = transactions.filter(t => t.date.startsWith(filterMonth)); const inc = txs.filter(t => t.type === 'income').reduce((a,t)=>a+t.value,0); const exp = txs.filter(t => t.type === 'expense' && !t.isInvoicePayment).reduce((a,t)=>a+t.value,0); const bal = inc - exp; const cats = {}; txs.filter(t => t.type === 'expense').forEach(t => cats[t.category] = (cats[t.category]||0) + t.value); const sortedCats = Object.entries(cats).map(([k,v])=>({name:k, value:v})).sort((a,b)=>b.value-a.value); return { txs, inc, exp, bal, sortedCats }; }, [transactions, filterMonth]);
-                return (
-                    <div className="max-w-4xl mx-auto space-y-6 pb-24 lg:pb-0">
-                        <div className="flex justify-between items-center bg-zinc-900 p-4 rounded-xl border border-zinc-800 no-print"><h2 className="font-bold text-emerald-500">Relatório</h2><div className="flex gap-2"><button onClick={() => window.print()} className="bg-zinc-800 p-2 rounded text-zinc-300 hover:text-white"><Printer size={20}/></button><select value={filterMonth} onChange={(e)=>setFilterMonth(e.target.value)} className="bg-zinc-800 border border-zinc-700 text-white p-2 rounded-lg outline-none">{availMonths.map(m => <option key={m} value={m}>{getMonthName(m)}</option>)}</select></div></div>
-                        <div className="bg-zinc-100 rounded-2xl overflow-hidden shadow-xl print-border">
-                            <div className={`p-6 text-white ${mData.bal >= 0 ? 'bg-emerald-600' : 'bg-red-600'}`}><p className="opacity-80 text-xs uppercase font-bold">Resultado de {getMonthName(filterMonth)}</p><h3 className="text-3xl font-bold">{formatCurrency(mData.bal)}</h3></div>
-                            <div className="p-4 grid grid-cols-2 gap-4 border-b border-zinc-200"><div className="text-center"><p className="text-zinc-500 text-xs uppercase font-bold">Entradas</p><p className="text-emerald-600 font-bold text-lg">{formatCurrency(mData.inc)}</p></div><div className="text-center"><p className="text-zinc-500 text-xs uppercase font-bold">Saídas</p><p className="text-red-600 font-bold text-lg">{formatCurrency(mData.exp)}</p></div></div>
-                            <div className="p-6 bg-white text-zinc-800"><h4 className="font-bold mb-4 flex items-center gap-2"><FileText size={18}/> Detalhamento</h4>{mData.sortedCats.map((c,i) => (<div key={c.name} className="flex items-center gap-3 mb-2"><span className="text-zinc-400 text-xs font-bold w-4">{i+1}</span><div className="flex-1"><div className="flex justify-between text-sm mb-1"><span className="font-medium">{c.name}</span><span className="font-bold">{formatCurrency(c.value)}</span></div><div className="w-full bg-zinc-100 h-2 rounded-full"><div className="h-full bg-emerald-500 rounded-full" style={{width: `${(c.value/mData.exp)*100}%`}}></div></div></div></div>))}</div>
-                        </div>
-                    </div>
-                );
-            };
-
-            const Goals = () => { const currentMonthExpenses = useMemo(() => { const g = {}; monthTransactions.filter(t => t.type === 'expense').forEach(t => g[t.category] = (g[t.category] || 0) + t.value); return g; }, [transactions]); return (<div className="space-y-6 pb-24 lg:pb-0"><div className="bg-zinc-900 p-4 rounded-xl border border-zinc-800 mb-4"><h2 className="font-bold text-emerald-500 mb-1">Metas</h2><p className="text-xs text-zinc-400">Orçamento mensal.</p></div><div className="grid grid-cols-1 md:grid-cols-2 gap-4">{categories.map(cat => { const goal = goals[cat] || 0; const spent = currentMonthExpenses[cat] || 0; const percent = goal > 0 ? (spent / goal) * 100 : 0; let barColor = 'bg-emerald-500'; if(percent > 80) barColor = 'bg-yellow-500'; if(percent > 100) barColor = 'bg-red-500'; return (<div key={cat} className="bg-zinc-900 border border-zinc-800 p-4 rounded-xl"><div className="flex justify-between mb-2"><span className="font-bold text-white">{cat}</span><input type="number" placeholder="Meta" className="bg-zinc-950 border border-zinc-700 w-24 text-right text-sm rounded p-1 text-white outline-none" value={goal || ''} onChange={(e) => handleUpdateGoal(cat, e.target.value)}/></div><div className="flex justify-between text-xs text-zinc-400 mb-1"><span>Gasto: {formatCurrency(spent)}</span><span>Restante: {formatCurrency(Math.max(0, goal - spent))}</span></div><div className="w-full bg-zinc-800 h-3 rounded-full overflow-hidden"><div className={`h-full ${barColor} transition-all`} style={{ width: `${Math.min(100, percent)}%` }}></div></div></div>) })}</div></div>); };
-            const Fixed = () => ( <div className="space-y-6 pb-24 lg:pb-0"><div className="flex justify-between items-center"><h2 className="text-2xl font-bold text-emerald-500">Fixas</h2><button onClick={()=>setIsFixedModalOpen(true)} className="bg-emerald-600 text-white p-2 rounded-lg"><Plus/></button></div><div className="grid grid-cols-1 md:grid-cols-2 gap-4">{fixedBills.map(b => { const isPaid = b.lastPaidMonth === currentMonth; const isOverdue = !isPaid && parseInt(b.dueDay) < new Date().getDate(); return (<div key={b.id} className={`bg-zinc-900 border ${isPaid ? 'border-emerald-500' : isOverdue ? 'border-red-500' : 'border-zinc-800'} p-4 rounded-xl relative`}>{isPaid && <div className="absolute top-0 right-0 bg-emerald-500 text-black text-[10px] font-bold px-2 py-1 rounded-bl-lg">PAGO</div>}{isOverdue && <div className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-bl-lg flex items-center gap-1"><AlertTriangle size={10}/> ATRASADO</div>}<div className="flex justify-between mb-2"><Calendar className={isOverdue ? "text-red-500" : "text-zinc-600"}/><div className="flex gap-2"><button onClick={()=>{setEditingFixed(b);setFixedForm(b);setIsFixedModalOpen(true)}} className="text-zinc-600 hover:text-emerald-500"><Edit2 size={16}/></button><button onClick={()=>deleteFixed(b.id)} className="text-zinc-600 hover:text-red-500"><Trash2 size={16}/></button></div></div><h3 className="font-bold text-white">{b.name}</h3><p className="text-zinc-400 text-xs mb-3">Dia {b.dueDay} • {b.category}</p><div className="flex justify-between items-center pt-2 border-t border-zinc-800"><span className="text-emerald-500 font-bold">{formatCurrency(b.value)}</span>{!isPaid ? <button onClick={()=>payFixed(b)} className="bg-zinc-100 text-black px-3 py-1 rounded text-xs font-bold">Pagar</button> : <span className="text-emerald-500 text-xs flex gap-1"><CheckCircle size={14}/> Pago</span>}</div></div>); })}</div></div> );
-            const Trans = () => { const [ft, setFt] = useState(''); const fTx = transactions.filter(t => t.description.toLowerCase().includes(ft.toLowerCase())); return ( <div className="space-y-6 pb-24 lg:pb-0"><div className="flex gap-2"><input type="text" placeholder="Buscar..." value={ft} onChange={e=>setFt(e.target.value)} className="bg-zinc-900 border border-zinc-800 text-white p-2 rounded-lg w-full outline-none" /><button onClick={()=>openTxModal()} className="bg-emerald-600 text-white p-2 rounded-lg"><Plus/></button></div><div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden"><table className="w-full text-left"><tbody className="divide-y divide-zinc-800">{fTx.sort((a,b)=>new Date(b.date)-new Date(a.date)).map(tx => (<tr key={tx.id} onClick={() => openTxModal(tx)} className="hover:bg-zinc-800/50 cursor-pointer"><td className="p-4"><div className="text-zinc-200 font-medium">{tx.description}</div><div className="text-zinc-500 text-xs">{formatDate(tx.date)} • {tx.method} {tx.cardId ? '(Crédito)' : ''}</div></td><td className={`p-4 text-right font-bold ${tx.type==='income'?'text-emerald-500':'text-red-500'}`}>{tx.type==='income'?'+':'-'} {formatCurrency(tx.value)}</td><td className="p-4 text-right w-10"><button onClick={(e)=>{e.stopPropagation();deleteTx(tx.id)}} className="text-zinc-600 hover:text-red-500"><Trash2 size={16}/></button></td></tr>))}</tbody></table></div></div> ); };
-            const NavBtn = ({id, icon:I, label}) => ( <button onClick={()=>{setActiveTab(id);setIsMobileMenuOpen(false)}} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl ${activeTab===id ? 'bg-emerald-500 text-black font-bold' : 'text-zinc-400'}`}><I size={20}/> <span>{label}</span></button> );
+            const handleExport = () => { const data = JSON.stringify({ initialBalance, transactions, fixedBills, categories, goals, cards, v: '10' }); const blob = new Blob([data], { type: 'application/json' }); const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = `backup_financas_v10_${todayStr}.json`; document.body.appendChild(link); link.click(); document.body.removeChild(link); };
+            const handleExportExcel = () => { const headers = ["Data", "Descrição", "Valor", "Tipo", "Categoria", "Método", "Parcela", "Status"]; const rows = transactions.map(t => [ t.date, `"${t.description.replace(/"/g, '""')}"`, t.value.toFixed(2).replace('.', ','), t.type === 'income' ? 'Entrada' : 'Saída', t.category, t.method, t.installmentNumber || '', t.isPaid ? 'Pago' : 'Pendente' ]); const csvContent = "\uFEFF" + [headers.join(";"), ...rows.map(r => r.join(";"))].join("\n"); const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = `relatorio_financas_${todayStr}.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link); };
+            const handleImport = (e) => { const file = e.target.files[0]; if (!file) return; const r = new FileReader(); r.onload = (ev) => { try { const d = JSON.parse(ev.target.result); if (d.transactions && confirm('Restaurar dados? Isso substituirá os atuais.')) { setInitialBalance(d.initialBalance || 0); setTransactions(d.transactions || []); setFixedBills(d.fixedBills || []); setCategories(d.categories || INITIAL_CATS); setGoals(d.goals || {}); setCards(d.cards || []); alert('Sistema restaurado com sucesso!'); setIsConfigModalOpen(false); } } catch { alert('Erro ao ler arquivo.'); } }; r.readAsText(file); e.target.value = null; };
+            const NavBtn = ({id, icon:I, label}) => ( <button onClick={()=>{setActiveTab(id);setIsMobileMenuOpen(false)}} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 font-medium ${activeTab===id ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900/50'}`}><I size={20}/> <span>{label}</span></button> );
 
             return (
                 <AppLoader>
-                    <div className="flex min-h-screen bg-zinc-950 text-zinc-100 font-sans">
-                        <aside className="hidden lg:flex w-72 flex-col p-6 border-r border-zinc-900 sticky top-0 h-screen no-print">
-                            <h1 className="text-xl font-bold mb-10 flex items-center gap-2"><div className="bg-emerald-500 p-1 rounded"><DollarSign className="text-black"/></div> FinançasPro</h1>
+                    <div className="flex min-h-screen font-sans selection:bg-emerald-500/30 selection:text-emerald-400">
+                        <aside className="hidden lg:flex w-72 flex-col p-6 border-r border-zinc-800 bg-black/40 backdrop-blur-xl sticky top-0 h-screen no-print z-20">
+                            <h1 className="text-2xl font-bold mb-10 flex items-center gap-3 tracking-tight text-white"><div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20 text-black"><DollarSign size={24}/></div> FinançasPro</h1>
                             <nav className="space-y-2 flex-1">
-                                <NavBtn id="dashboard" icon={LayoutDashboard} label="Dashboard"/>
+                                <NavBtn id="dashboard" icon={LayoutDashboard} label="Visão Geral"/>
                                 <NavBtn id="cards" icon={CreditCard} label="Cartões"/>
                                 <NavBtn id="transactions" icon={FileText} label="Movimentações"/>
                                 <NavBtn id="goals" icon={Target} label="Metas"/>
                                 <NavBtn id="fixed" icon={Calendar} label="Fixas"/>
                                 <NavBtn id="reports" icon={TrendingUp} label="Relatórios"/>
                             </nav>
-                            <button onClick={()=>setIsConfigModalOpen(true)} className="flex items-center gap-3 text-zinc-500 hover:text-white p-2"><Settings size={20}/> Configurações</button>
+                            <button onClick={()=>setIsConfigModalOpen(true)} className="glass-panel p-3 rounded-xl flex items-center gap-3 text-zinc-400 hover:text-white transition-all hover:bg-zinc-800/50 group"><Settings size={20} className="group-hover:rotate-90 transition-transform duration-500"/> Configurações</button>
                         </aside>
 
-                        <div className="lg:hidden fixed top-0 w-full bg-zinc-950/90 backdrop-blur-md border-b border-zinc-900 z-40 px-4 py-3 flex justify-between items-center shadow-lg no-print">
-                            <div className="font-bold flex gap-2"><DollarSign className="text-emerald-500"/> FinançasPRO V9</div>
-                            <button onClick={()=>setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-white p-1">{isMobileMenuOpen?<X/>:<Menu/>}</button>
+                        <div className="lg:hidden fixed top-0 w-full bg-black/80 backdrop-blur-xl border-b border-zinc-800 z-40 px-4 py-3 flex justify-between items-center shadow-2xl no-print">
+                            <div className="font-bold flex gap-2 text-zinc-100 items-center"><DollarSign className="text-emerald-500"/> FinançasPro <span className="text-xs bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-400">V10.2</span></div>
+                            <button onClick={()=>setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-zinc-300 p-2 active:scale-95 transition-transform">{isMobileMenuOpen?<X/>:<Menu/>}</button>
                         </div>
 
                         {isMobileMenuOpen && (
-                            <div className="fixed inset-0 bg-zinc-950 z-30 pt-20 px-6 lg:hidden no-print">
-                                <nav className="space-y-4"><NavBtn id="dashboard" icon={LayoutDashboard} label="Dashboard"/><NavBtn id="cards" icon={CreditCard} label="Cartões"/><NavBtn id="transactions" icon={FileText} label="Movimentações"/><NavBtn id="goals" icon={Target} label="Metas"/><NavBtn id="fixed" icon={Calendar} label="Fixas"/><NavBtn id="reports" icon={TrendingUp} label="Relatórios"/><button onClick={()=>{setIsConfigModalOpen(true);setIsMobileMenuOpen(false)}} className="flex gap-3 text-zinc-500 p-4"><Settings/> Configurações</button></nav>
+                            <div className="fixed inset-0 bg-black/95 z-30 pt-24 px-6 lg:hidden no-print animate-in slide-in-from-top-10 backdrop-blur-xl">
+                                <nav className="space-y-4"><NavBtn id="dashboard" icon={LayoutDashboard} label="Visão Geral"/><NavBtn id="cards" icon={CreditCard} label="Cartões"/><NavBtn id="transactions" icon={FileText} label="Movimentações"/><NavBtn id="goals" icon={Target} label="Metas"/><NavBtn id="fixed" icon={Calendar} label="Fixas"/><NavBtn id="reports" icon={TrendingUp} label="Relatórios"/><button onClick={()=>{setIsConfigModalOpen(true);setIsMobileMenuOpen(false)}} className="flex gap-3 text-zinc-400 p-4 w-full border-t border-zinc-800 mt-4"><Settings/> Configurações</button></nav>
                             </div>
                         )}
 
-                        <main className="flex-1 p-4 lg:p-10 mt-14 lg:mt-0 overflow-x-hidden">
-                            {activeTab === 'dashboard' && <Dashboard />}
-                            {activeTab === 'cards' && <CardsView />}
-                            {activeTab === 'transactions' && <Trans />}
-                            {activeTab === 'goals' && <Goals />}
-                            {activeTab === 'fixed' && <Fixed />}
-                            {activeTab === 'reports' && <Reports />}
+                        <main className="flex-1 p-4 lg:p-8 mt-16 lg:mt-0 overflow-x-hidden">
+                            <div className="flex items-center justify-between mb-8 glass-panel p-2 rounded-2xl sticky top-4 lg:static z-30 shadow-2xl lg:shadow-none border-zinc-800/80 mx-auto max-w-sm lg:max-w-none">
+                                <button onClick={() => changeMonth(-1)} className="p-3 hover:bg-zinc-800/50 rounded-xl text-zinc-400 hover:text-white transition-all active:scale-95"><ChevronLeft size={20}/></button>
+                                <div className="text-center flex flex-col items-center">
+                                    <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-0.5">Período</span>
+                                    <span className="text-zinc-100 font-bold text-lg capitalize flex items-center gap-2">{getMonthName(currentMonth)} <ChevronDown size={14} className="text-zinc-600"/></span>
+                                </div>
+                                <button onClick={() => changeMonth(1)} className="p-3 hover:bg-zinc-800/50 rounded-xl text-zinc-400 hover:text-white transition-all active:scale-95"><ChevronRight size={20}/></button>
+                            </div>
+
+                            <div className="animate-in fade-in duration-500 slide-in-from-bottom-4">
+                                {activeTab === 'dashboard' && <Dashboard transactions={transactions} fixedBills={fixedBills} monthIncome={monthIncome} monthExpense={monthExpense} accountBalance={accountBalance} totalCreditUsed={totalCreditUsed} currentMonth={currentMonth} openTxModal={openTxModal} />}
+                                {activeTab === 'cards' && <CardsView cards={cards} transactions={transactions} setEditingCard={setEditingCard} setCardForm={setCardForm} setIsCardModalOpen={setIsCardModalOpen} deleteCard={deleteCard} getCardStats={getCardStats} getCardInvoices={getCardInvoices} setInvoiceDetailModal={setInvoiceDetailModal} payInvoice={payInvoice} />}
+                                {activeTab === 'transactions' && <Trans transactions={transactions} deleteTx={deleteTx} openTxModal={openTxModal} currentMonth={currentMonth} />}
+                                {activeTab === 'goals' && <GoalsPanel categories={categories} goals={goals} transactions={transactions} currentMonth={currentMonth} onUpdateGoal={handleUpdateGoal} />}
+                                {activeTab === 'fixed' && <Fixed fixedBills={fixedBills} deleteFixed={deleteFixed} setEditingFixed={setEditingFixed} setFixedForm={setFixedForm} setIsFixedModalOpen={setIsFixedModalOpen} payFixed={payFixed} currentMonth={currentMonth} />}
+                                {activeTab === 'reports' && <Reports transactions={transactions} currentMonth={currentMonth} availMonths={[]} setFilterMonth={()=>{}} />}
+                            </div>
                         </main>
 
-                        {/* Modais */}
-                        <Modal isOpen={isTxModalOpen} onClose={()=>setIsTxModalOpen(false)} title={editingTx ? "Editar" : "Nova Movimentação"}>
-                            <form onSubmit={handleSaveTx} className="space-y-4">
-                                <div className="grid grid-cols-2 gap-2"><button type="button" onClick={()=>setTxForm({...txForm, type:'income'})} className={`p-2 rounded border text-sm ${txForm.type==='income'?'bg-emerald-500 text-black border-emerald-500':'bg-zinc-900 border-zinc-700 text-zinc-400'}`}>Entrada</button><button type="button" onClick={()=>setTxForm({...txForm, type:'expense'})} className={`p-2 rounded border text-sm ${txForm.type==='expense'?'bg-red-500 text-white border-red-500':'bg-zinc-900 border-zinc-700 text-zinc-400'}`}>Saída</button></div>
-                                <input type="number" step="0.01" required placeholder="Valor" className="w-full bg-zinc-900 border border-zinc-700 p-2 rounded text-white outline-none" value={txForm.value||''} onChange={e=>setTxForm({...txForm, value:e.target.value})} />
-                                <input type="text" required placeholder="Descrição" className="w-full bg-zinc-900 border border-zinc-700 p-2 rounded text-white outline-none" value={txForm.description||''} onChange={e=>setTxForm({...txForm, description:e.target.value})} />
-                                <div className="grid grid-cols-2 gap-2"><select className="bg-zinc-900 border border-zinc-700 p-2 rounded text-white outline-none" value={txForm.category} onChange={e=>setTxForm({...txForm, category:e.target.value})}>{categories.map(c=><option key={c} value={c}>{c}</option>)}</select><input type="date" required className="bg-zinc-900 border border-zinc-700 p-2 rounded text-white outline-none" value={txForm.date||''} onChange={e=>setTxForm({...txForm, date:e.target.value})} /></div>
-                                <div><label className="text-xs text-zinc-500 mb-1 block">Pagamento</label><select className="w-full bg-zinc-900 border border-zinc-700 p-2 rounded text-white outline-none" value={txForm.method} onChange={e=>setTxForm({...txForm, method:e.target.value})}>{PAYMENT_METHODS.map(m => <option key={m} value={m}>{m}</option>)}</select></div>
-                                {txForm.method === 'Cartão Crédito' && (<div><label className="text-xs text-zinc-500 mb-1 block">Selecionar Cartão</label><select className="w-full bg-zinc-900 border border-zinc-700 p-2 rounded text-white outline-none" required value={txForm.cardId} onChange={e=>setTxForm({...txForm, cardId:e.target.value})}><option value="">Selecione...</option>{cards.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></div>)}
-                                <button type="submit" className="w-full bg-emerald-600 p-3 rounded font-bold text-white">Salvar</button>
+                        {/* MODAIS - GLASSMOPRHISM */}
+                        <Modal isOpen={isTxModalOpen} onClose={()=>setIsTxModalOpen(false)} title={editingTx ? "Editar Lançamento" : "Novo Lançamento"}>
+                            <form onSubmit={handleSaveTx} className="space-y-5">
+                                <div className="grid grid-cols-2 gap-3 p-1 bg-zinc-950/50 rounded-xl border border-zinc-800">
+                                    <button type="button" onClick={()=>setTxForm({...txForm, type:'income'})} className={`p-2.5 rounded-lg text-sm font-semibold transition-all duration-300 ${txForm.type==='income'?'bg-emerald-500 text-black shadow-lg shadow-emerald-900/20':'text-zinc-400 hover:text-zinc-200'}`}>Entrada</button>
+                                    <button type="button" onClick={()=>setTxForm({...txForm, type:'expense'})} className={`p-2.5 rounded-lg text-sm font-semibold transition-all duration-300 ${txForm.type==='expense'?'bg-red-500 text-white shadow-lg shadow-red-900/20':'text-zinc-400 hover:text-zinc-200'}`}>Saída</button>
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-xs text-zinc-500 font-bold ml-1">VALOR</label>
+                                    <input type="number" step="0.01" required placeholder="0,00" className="w-full bg-zinc-950/30 border border-zinc-700/50 p-3 rounded-xl text-white outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20 transition-all text-lg font-bold placeholder:text-zinc-700" value={txForm.value||''} onChange={e=>setTxForm({...txForm, value:e.target.value})} />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-xs text-zinc-500 font-bold ml-1">DESCRIÇÃO</label>
+                                    <input type="text" required placeholder="Ex: Mercado Semanal" className="w-full bg-zinc-950/30 border border-zinc-700/50 p-3 rounded-xl text-white outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20 transition-all placeholder:text-zinc-700" value={txForm.description||''} onChange={e=>setTxForm({...txForm, description:e.target.value})} />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <label className="text-xs text-zinc-500 font-bold ml-1">CATEGORIA</label>
+                                        <select className="w-full bg-zinc-950/30 border border-zinc-700/50 p-3 rounded-xl text-white outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20 transition-all appearance-none" value={txForm.category} onChange={e=>setTxForm({...txForm, category:e.target.value})}>{categories.map(c=><option key={c} value={c} className="bg-zinc-900">{c}</option>)}</select>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-xs text-zinc-500 font-bold ml-1">DATA</label>
+                                        <input type="date" required className="w-full bg-zinc-950/30 border border-zinc-700/50 p-3 rounded-xl text-white outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20 transition-all" value={txForm.date||''} onChange={e=>setTxForm({...txForm, date:e.target.value})} />
+                                    </div>
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-xs text-zinc-500 font-bold ml-1">MÉTODO</label>
+                                    <select className="w-full bg-zinc-950/30 border border-zinc-700/50 p-3 rounded-xl text-white outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20 transition-all appearance-none" value={txForm.method} onChange={e=>setTxForm({...txForm, method:e.target.value})}>{PAYMENT_METHODS.map(m => <option key={m} value={m} className="bg-zinc-900">{m}</option>)}</select>
+                                </div>
+                                {txForm.method === 'Cartão Crédito' && (
+                                    <div className="bg-black/20 p-4 rounded-xl border border-white/5 space-y-3 animate-in fade-in slide-in-from-top-2">
+                                        <div><label className="text-[10px] text-zinc-500 font-bold mb-1 block uppercase">Cartão</label><select className="w-full bg-zinc-900/80 border border-zinc-700 p-2.5 rounded-lg text-white outline-none focus:border-purple-500/50 transition-all" required value={txForm.cardId} onChange={e=>setTxForm({...txForm, cardId:e.target.value})}><option value="">Selecione...</option>{cards.map(c => <option key={c.id} value={c.id} className="bg-zinc-900">{c.name}</option>)}</select></div>
+                                        {!editingTx && (<><div className="grid grid-cols-2 gap-3"><div><label className="text-[10px] text-zinc-500 font-bold mb-1 block uppercase">Parcelas</label><input type="number" min="1" max="60" className="w-full bg-zinc-900/80 border border-zinc-700 p-2.5 rounded-lg text-white outline-none focus:border-purple-500/50 transition-all" value={txForm.installments || 1} onChange={e => setTxForm({...txForm, installments: parseInt(e.target.value) || 1})} /></div><div><label className="text-[10px] text-zinc-500 font-bold mb-1 block uppercase">Juros (%) Total</label><input type="number" step="0.1" className="w-full bg-zinc-900/80 border border-zinc-700 p-2.5 rounded-lg text-white outline-none focus:border-purple-500/50 transition-all" value={txForm.interestRate || 0} onChange={e => setTxForm({...txForm, interestRate: e.target.value})} /></div></div><div className="flex items-center gap-2 mt-2"><input type="checkbox" id="showParcelVal" checked={txForm.showInstallmentValue} onChange={e => setTxForm({...txForm, showInstallmentValue: e.target.checked})} className="accent-purple-500 rounded"/><label htmlFor="showParcelVal" className="text-xs text-zinc-400">Mostrar valor por parcela</label></div><div className="bg-purple-500/10 p-3 rounded-lg border border-purple-500/20 text-xs text-purple-200 mt-2">{(() => { const val = parseFloat(txForm.value) || 0; const inst = parseInt(txForm.installments) || 1; const interest = parseFloat(txForm.interestRate) || 0; const total = val + (val * interest / 100); const parcelVal = total / inst; return (<><div className="flex justify-between mb-1"><span>Total Final:</span> <span className="font-bold">{formatCurrency(total)}</span></div><div className="flex justify-between"><span>Valor Parcela:</span> <span className="opacity-80">{formatCurrency(parcelVal)} x {inst}</span></div></>) })()}</div></>)}
+                                    </div>
+                                )}
+                                <button type="submit" className="btn-primary w-full py-3.5 rounded-xl font-bold text-white text-sm shadow-xl tracking-wide">CONFIRMAR LANÇAMENTO</button>
                             </form>
                         </Modal>
 
                         <Modal isOpen={isCardModalOpen} onClose={()=>setIsCardModalOpen(false)} title={editingCard ? "Editar Cartão" : "Novo Cartão"}>
                             <form onSubmit={handleSaveCard} className="space-y-4">
-                                <input type="text" required placeholder="Nome do Cartão" className="w-full bg-zinc-900 border border-zinc-700 p-2 rounded text-white outline-none" value={cardForm.name||''} onChange={e=>setCardForm({...cardForm, name:e.target.value})} />
-                                <input type="number" required placeholder="Limite Total" className="w-full bg-zinc-900 border border-zinc-700 p-2 rounded text-white outline-none" value={cardForm.limit||''} onChange={e=>setCardForm({...cardForm, limit:e.target.value})} />
-                                <div className="grid grid-cols-2 gap-2"><input type="number" required placeholder="Dia Fechamento" className="w-full bg-zinc-900 border border-zinc-700 p-2 rounded text-white outline-none" value={cardForm.closingDay||''} onChange={e=>setCardForm({...cardForm, closingDay:e.target.value})} /><input type="number" required placeholder="Dia Vencimento" className="w-full bg-zinc-900 border border-zinc-700 p-2 rounded text-white outline-none" value={cardForm.dueDay||''} onChange={e=>setCardForm({...cardForm, dueDay:e.target.value})} /></div>
-                                <div><label className="text-xs text-zinc-500 mb-2 block">Cor</label><div className="flex gap-2">{CARD_GRADIENTS.map(g => (<button type="button" key={g} onClick={()=>setCardForm({...cardForm, gradient:g})} className={`w-8 h-8 rounded-full ${g} ${cardForm.gradient === g ? 'ring-2 ring-white' : ''}`}></button>))}</div></div>
-                                <button type="submit" className="w-full bg-emerald-600 p-3 rounded font-bold text-white">Salvar Cartão</button>
+                                <input type="text" required placeholder="Nome do Cartão (Ex: Nubank)" className="w-full bg-zinc-950/30 border border-zinc-700/50 p-3 rounded-xl text-white outline-none focus:border-blue-500/50 transition-all" value={cardForm.name||''} onChange={e=>setCardForm({...cardForm, name:e.target.value})} />
+                                <input type="number" required placeholder="Limite Total (R$)" className="w-full bg-zinc-950/30 border border-zinc-700/50 p-3 rounded-xl text-white outline-none focus:border-blue-500/50 transition-all" value={cardForm.limit||''} onChange={e=>setCardForm({...cardForm, limit:e.target.value})} />
+                                <div className="grid grid-cols-2 gap-3"><div className="space-y-1"><label className="text-[10px] text-zinc-500 font-bold uppercase ml-1">Fechamento</label><input type="number" required placeholder="Dia" className="w-full bg-zinc-950/30 border border-zinc-700/50 p-3 rounded-xl text-white outline-none focus:border-blue-500/50 transition-all" value={cardForm.closingDay||''} onChange={e=>setCardForm({...cardForm, closingDay:e.target.value})} /></div><div className="space-y-1"><label className="text-[10px] text-zinc-500 font-bold uppercase ml-1">Vencimento</label><input type="number" required placeholder="Dia" className="w-full bg-zinc-950/30 border border-zinc-700/50 p-3 rounded-xl text-white outline-none focus:border-blue-500/50 transition-all" value={cardForm.dueDay||''} onChange={e=>setCardForm({...cardForm, dueDay:e.target.value})} /></div></div>
+                                <div><label className="text-xs text-zinc-500 font-bold mb-3 block ml-1">ESTILO VISUAL</label><div className="flex gap-3 justify-center">{CARD_GRADIENTS.map(g => (<button type="button" key={g} onClick={()=>setCardForm({...cardForm, gradient:g})} className={`w-12 h-12 rounded-2xl ${g} ${cardForm.gradient === g ? 'ring-2 ring-white scale-110 shadow-xl' : 'opacity-60 hover:opacity-100 hover:scale-105'} transition-all duration-300`}></button>))}</div></div>
+                                <button type="submit" className="btn-primary w-full py-3.5 rounded-xl font-bold text-white text-sm shadow-xl tracking-wide mt-2">SALVAR CARTÃO</button>
                             </form>
+                        </Modal>
+                        
+                        <Modal isOpen={!!invoiceDetailModal} onClose={()=>setInvoiceDetailModal(null)} title={`Fatura ${invoiceDetailModal ? getMonthName(invoiceDetailModal.month) : ''}`}>
+                            {invoiceDetailModal && (
+                                <div className="space-y-5">
+                                    <div className="flex justify-between items-center bg-zinc-950/50 border border-zinc-800 p-4 rounded-xl shadow-inner"><span className="text-zinc-400 text-sm font-medium">Total da Fatura</span><span className="text-2xl font-bold text-zinc-100">{formatCurrency(invoiceDetailModal.total)}</span></div>
+                                    <div className="space-y-2 max-h-[300px] overflow-y-auto custom-scrollbar pr-1">{invoiceDetailModal.items.map(tx => (<div key={tx.id} className="p-3 bg-white/5 border border-white/5 rounded-xl flex justify-between items-center hover:bg-white/10 transition-colors"><div><p className="text-sm font-semibold text-zinc-200">{tx.description}</p><p className="text-[10px] text-zinc-500 font-mono mt-0.5">{formatDate(tx.date)} {tx.installmentNumber ? `• ${tx.installmentNumber}` : ''}</p></div><span className="text-sm text-red-400 font-bold">{formatCurrency(tx.value)}</span></div>))}</div>
+                                    <button onClick={() => payInvoice(invoiceDetailModal.cardId, invoiceDetailModal.total, invoiceDetailModal.month)} className="w-full bg-emerald-600 hover:bg-emerald-500 py-3.5 rounded-xl font-bold text-white shadow-lg shadow-emerald-900/20 transition-all hover:-translate-y-1">REALIZAR PAGAMENTO</button>
+                                </div>
+                            )}
                         </Modal>
 
                         <Modal isOpen={isFixedModalOpen} onClose={()=>setIsFixedModalOpen(false)} title={editingFixed ? "Editar Conta Fixa" : "Nova Conta Fixa"}>
                             <form onSubmit={handleSaveFixed} className="space-y-4">
-                                <input type="text" required placeholder="Nome" className="w-full bg-zinc-900 border border-zinc-700 p-2 rounded text-white outline-none" value={fixedForm.name||''} onChange={e=>setFixedForm({...fixedForm, name:e.target.value})} />
-                                <input type="number" step="0.01" required placeholder="Valor" className="w-full bg-zinc-900 border border-zinc-700 p-2 rounded text-white outline-none" value={fixedForm.value||''} onChange={e=>setFixedForm({...fixedForm, value:e.target.value})} />
-                                <div className="grid grid-cols-2 gap-2"><input type="number" required placeholder="Dia Venc." className="w-full bg-zinc-900 border border-zinc-700 p-2 rounded text-white outline-none" value={fixedForm.dueDay||''} onChange={e=>setFixedForm({...fixedForm, dueDay:e.target.value})} /><select className="bg-zinc-900 border border-zinc-700 p-2 rounded text-white outline-none" value={fixedForm.category||'Contas Fixas'} onChange={e=>setFixedForm({...fixedForm, category:e.target.value})}>{categories.map(c=><option key={c} value={c}>{c}</option>)}</select></div>
-                                <button type="submit" className="w-full bg-emerald-600 p-3 rounded font-bold text-white">Salvar</button>
+                                <input type="text" required placeholder="Nome (Ex: Aluguel)" className="w-full bg-zinc-950/30 border border-zinc-700/50 p-3 rounded-xl text-white outline-none focus:border-emerald-500/50 transition-all" value={fixedForm.name||''} onChange={e=>setFixedForm({...fixedForm, name:e.target.value})} />
+                                <input type="number" step="0.01" required placeholder="Valor (R$)" className="w-full bg-zinc-950/30 border border-zinc-700/50 p-3 rounded-xl text-white outline-none focus:border-emerald-500/50 transition-all" value={fixedForm.value||''} onChange={e=>setFixedForm({...fixedForm, value:e.target.value})} />
+                                <div className="grid grid-cols-2 gap-3"><input type="number" required placeholder="Dia Venc." className="w-full bg-zinc-950/30 border border-zinc-700/50 p-3 rounded-xl text-white outline-none focus:border-emerald-500/50 transition-all" value={fixedForm.dueDay||''} onChange={e=>setFixedForm({...fixedForm, dueDay:e.target.value})} /><select className="w-full bg-zinc-950/30 border border-zinc-700/50 p-3 rounded-xl text-white outline-none focus:border-emerald-500/50 transition-all appearance-none" value={fixedForm.category||'Contas Fixas'} onChange={e=>setFixedForm({...fixedForm, category:e.target.value})}>{categories.map(c=><option key={c} value={c} className="bg-zinc-900">{c}</option>)}</select></div>
+                                <button type="submit" className="btn-primary w-full py-3.5 rounded-xl font-bold text-white text-sm shadow-xl tracking-wide mt-2">SALVAR CONTA</button>
                             </form>
                         </Modal>
 
-                        <Modal isOpen={isConfigModalOpen} onClose={()=>setIsConfigModalOpen(false)} title="Configurações">
-                            <div className="space-y-4">
-                                <div><h4 className="text-white mb-1">Saldo Inicial</h4><input type="number" value={initialBalance} onChange={e=>setInitialBalance(parseFloat(e.target.value)||0)} className="w-full bg-zinc-900 border border-zinc-700 p-2 rounded text-white outline-none"/></div>
-                                <div><h4 className="text-white mb-2">Categorias</h4><div className="flex gap-2 mb-2"><input type="text" placeholder="Nova..." value={newCategory} onChange={e=>setNewCategory(e.target.value)} className="bg-zinc-900 border border-zinc-700 p-2 rounded text-white w-full outline-none"/><button onClick={()=>{if(newCategory){setCategories([...categories,newCategory]);setNewCategory('')}}} className="bg-emerald-600 p-2 rounded text-white"><Plus/></button></div><div className="flex flex-wrap gap-2">{categories.map(c=><span key={c} className="bg-zinc-800 border border-zinc-700 text-xs p-1 px-2 rounded flex items-center gap-1 text-zinc-300">{c} <button onClick={()=>setCategories(categories.filter(x=>x!==c))} className="text-red-400"><X size={10}/></button></span>)}</div></div>
-                                <div className="grid grid-cols-2 gap-2 pt-4 border-t border-zinc-800"><button onClick={handleExport} className="bg-zinc-800 p-3 rounded flex flex-col items-center text-emerald-500 border border-zinc-700"><Download/><span className="text-xs font-bold mt-1">Backup</span></button><button onClick={()=>fileInputRef.current.click()} className="bg-zinc-800 p-3 rounded flex flex-col items-center text-blue-500 border border-zinc-700"><Upload/><span className="text-xs font-bold mt-1">Restaurar</span><input type="file" hidden ref={fileInputRef} onChange={handleImport}/></button></div>
+                        <Modal isOpen={isConfigModalOpen} onClose={()=>setIsConfigModalOpen(false)} title="Configurações do Sistema">
+                            <div className="space-y-6">
+                                <div><h4 className="text-zinc-400 text-xs font-bold uppercase mb-2 ml-1">Saldo Inicial</h4><input type="number" value={initialBalance} onChange={e=>setInitialBalance(parseFloat(e.target.value)||0)} className="w-full bg-zinc-950/50 border border-zinc-700/50 p-3 rounded-xl text-white outline-none focus:border-emerald-500/50 transition-all font-mono text-lg"/></div>
+                                <div><h4 className="text-zinc-400 text-xs font-bold uppercase mb-2 ml-1">Categorias Personalizadas</h4><div className="flex gap-2 mb-3"><input type="text" placeholder="Nova categoria..." value={newCategory} onChange={e=>setNewCategory(e.target.value)} className="bg-zinc-950/50 border border-zinc-700/50 p-3 rounded-xl text-white w-full outline-none focus:border-emerald-500/50 transition-all"/><button onClick={()=>{if(newCategory){setCategories([...categories,newCategory]);setNewCategory('')}}} className="bg-emerald-600/20 hover:bg-emerald-600 text-emerald-500 hover:text-white p-3 rounded-xl transition-all border border-emerald-500/20"><Plus/></button></div><div className="flex flex-wrap gap-2">{categories.map(c=><span key={c} className="bg-zinc-800/50 border border-zinc-700/50 text-xs p-2 pl-3 rounded-lg flex items-center gap-2 text-zinc-300 shadow-sm">{c} <button onClick={()=>setCategories(categories.filter(x=>x!==c))} className="text-zinc-500 hover:text-red-400 transition-colors bg-black/20 rounded p-0.5"><X size={12}/></button></span>)}</div></div>
+                                <div className="grid grid-cols-2 gap-3 pt-6 border-t border-zinc-800/50">
+                                    <button onClick={handleExport} className="glass-button p-4 rounded-2xl flex flex-col items-center gap-2 text-emerald-400 hover:text-emerald-300 hover:border-emerald-500/30"><Download size={24}/><span className="text-xs font-bold">Backup JSON</span></button>
+                                    <button onClick={handleExportExcel} className="glass-button p-4 rounded-2xl flex flex-col items-center gap-2 text-green-400 hover:text-green-300 hover:border-green-500/30"><FileSpreadsheet size={24}/><span className="text-xs font-bold">Relatório Excel</span></button>
+                                    <button onClick={()=>fileInputRef.current.click()} className="glass-button p-4 rounded-2xl flex flex-col items-center gap-2 text-blue-400 hover:text-blue-300 hover:border-blue-500/30 col-span-2"><Upload size={24}/><span className="text-xs font-bold">Restaurar Dados</span><input type="file" hidden ref={fileInputRef} onChange={handleImport}/></button>
+                                </div>
                             </div>
                         </Modal>
                     </div>
@@ -397,9 +746,7 @@
         }
 
         const root = createRoot(document.getElementById('root'));
-        root.render(<FinanceAppV9 />);
+        root.render(<FinanceAppV10 />);
     </script>
 </body>
-
 </html>
-
