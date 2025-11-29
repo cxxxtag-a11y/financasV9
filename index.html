@@ -3,13 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FinançasPro V10.4</title>
+    <title>FinançasPro Enterprise</title>
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- Google Fonts: Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
 
     <script>window.process = { env: { NODE_ENV: 'production' } };</script>
     <script type="importmap">
@@ -65,11 +69,7 @@
             from { opacity: 0; transform: scale(0.95); }
             to { opacity: 1; transform: scale(1); }
         }
-        @keyframes pulse-glow {
-            0%, 100% { box-shadow: 0 0 15px rgba(16, 185, 129, 0); }
-            50% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.3); }
-        }
-
+        
         .anim-enter { animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
         .anim-zoom { animation: zoomIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         
@@ -98,7 +98,6 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
-        .glass-button:active { transform: translateY(0); }
 
         .btn-primary {
             background: linear-gradient(135deg, #10b981 0%, #059669 100%);
@@ -121,6 +120,12 @@
         .card-gradient-3 { background: linear-gradient(135deg, #334155 0%, #0f172a 100%); }
         .card-gradient-4 { background: linear-gradient(135deg, #10b981 0%, #047857 100%); }
 
+        .login-bg {
+            background-image: url('https://images.unsplash.com/photo-1639322537228-f710d846310a?q=80&w=2532&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+        }
+
         @media print {
             body { background-color: white; background-image: none; color: black; }
             aside, .no-print, .glass-panel { box-shadow: none !important; backdrop-filter: none !important; background: white !important; color: black !important; border: 1px solid #ccc !important; }
@@ -131,7 +136,7 @@
     
     <div id="loader">
         <div class="loader-ring"></div>
-        <p class="mt-4 text-zinc-400 font-medium tracking-wider text-sm uppercase">Carregando Sistema...</p>
+        <p class="mt-4 text-zinc-400 font-medium tracking-wider text-sm uppercase">Conectando ao Servidor...</p>
     </div>
     <div id="root"></div>
 
@@ -139,23 +144,46 @@
         import React, { useState, useEffect, useMemo, useRef } from 'react';
         import { createRoot } from 'react-dom/client';
         import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, AreaChart, Area, CartesianGrid, XAxis, YAxis } from 'recharts';
-        import { LayoutDashboard, Wallet, ArrowUpCircle, ArrowDownCircle, Plus, Trash2, Calendar, CheckCircle, TrendingUp, DollarSign, FileText, Settings, Menu, X, Download, Upload, Save, Filter, Printer, Target, Edit2, AlertTriangle, CreditCard, Landmark, Sparkles, ChevronDown, ChevronUp, Layers, ChevronLeft, ChevronRight, FileSpreadsheet, Moon, Sun } from 'lucide-react';
+        import { LayoutDashboard, Wallet, ArrowUpCircle, ArrowDownCircle, Plus, Trash2, Calendar, CheckCircle, TrendingUp, DollarSign, FileText, Settings, Menu, X, Download, Upload, Save, Filter, Printer, Target, Edit2, AlertTriangle, CreditCard, Landmark, Sparkles, ChevronDown, ChevronUp, Layers, ChevronLeft, ChevronRight, FileSpreadsheet, Moon, Sun, Lock, User, LogOut, Users, Key, HelpCircle, Info } from 'lucide-react';
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signOut, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, getDoc, onSnapshot, query, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+        // --- CONFIGURAÇÃO DO SEU FIREBASE ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyCQGWjeKhMnwf9KcfQ9WD-Uf1e2oNbBm7o",
+            authDomain: "financas-a9fe4.firebaseapp.com",
+            projectId: "financas-a9fe4",
+            storageBucket: "financas-a9fe4.firebasestorage.app",
+            messagingSenderId: "633764577292",
+            appId: "1:633764577292:web:36f8fa301d98a0996b2e29",
+            measurementId: "G-EYXVYB0KHB"
+        };
+        // ----------------------------------------------
+
+        // --- FIREBASE INITIALIZATION ---
+        let app, auth, db;
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+        } catch (e) {
+            console.error("Erro crítico ao inicializar Firebase:", e);
+        }
+        
+        const appId = 'financas-saas-v1'; 
+
+        // --- HELPER COMPONENTS ---
         function AppLoader({ children }) {
             useEffect(() => { const l = document.getElementById('loader'); if(l) { l.style.opacity = '0'; setTimeout(() => l.style.display = 'none', 500); } }, []);
             return children;
         }
 
+        // --- CONSTANTS & HELPERS ---
         const COLORS = { chart: ['#10b981', '#ef4444', '#eab308', '#3b82f6', '#a855f7', '#ec4899', '#f97316'] };
         const formatCurrency = (val) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
         const formatDate = (date) => { if(!date) return ''; const d = new Date(date+'T00:00:00'); return new Intl.DateTimeFormat('pt-BR').format(d); };
         const getMonthName = (m) => { if(!m) return ''; const [y, mo] = m.split('-'); return new Date(y, mo-1).toLocaleString('pt-BR', { month: 'long', year: 'numeric' }); };
-
-        const INITIAL_CATS = ['Alimentação', 'Moradia', 'Transporte', 'Saúde', 'Lazer', 'Educação', 'Salário', 'Investimento', 'Contas Fixas', 'Extra', 'Fatura Cartão'];
-        const PAYMENT_METHODS = ['Cartão Crédito', 'Cartão Débito', 'Pix', 'Dinheiro', 'Boleto', 'Transferência'];
-        const CARD_GRADIENTS = ['card-gradient-1', 'card-gradient-2', 'card-gradient-3', 'card-gradient-4'];
-
-        // --- HELPER FUNCTIONS ---
         const calculateInvoiceDate = (purchaseDate, closingDay, dueDay, monthOffset = 0) => {
             const date = new Date(purchaseDate + 'T12:00:00');
             const day = date.getDate();
@@ -166,6 +194,219 @@
             const finalDate = new Date(year, month, dueDay);
             return finalDate.toISOString().slice(0, 10);
         };
+
+        const INITIAL_CATS = ['Alimentação', 'Moradia', 'Transporte', 'Saúde', 'Lazer', 'Educação', 'Salário', 'Investimento', 'Contas Fixas', 'Extra', 'Fatura Cartão'];
+        const PAYMENT_METHODS = ['Cartão Crédito', 'Cartão Débito', 'Pix', 'Dinheiro', 'Boleto', 'Transferência'];
+        const CARD_GRADIENTS = ['card-gradient-1', 'card-gradient-2', 'card-gradient-3', 'card-gradient-4'];
+
+        // --- AUTH & LOGIN SYSTEM ---
+
+        const LoginScreen = ({ onLogin, isFirebaseReady, firebaseError }) => {
+            const [user, setUser] = useState('');
+            const [pass, setPass] = useState('');
+            const [error, setError] = useState('');
+            const [loading, setLoading] = useState(false);
+
+            const handleSubmit = async (e) => {
+                e.preventDefault();
+                setError('');
+                setLoading(true);
+
+                if (!isFirebaseReady) {
+                    setError('Erro: Conexão com Servidor não estabelecida. Verifique sua internet.');
+                    setLoading(false);
+                    return;
+                }
+
+                // Admin Hardcoded Check
+                if (user === 'lipe' && pass === '07lipe') {
+                    onLogin({ username: 'lipe', role: 'admin' });
+                    setLoading(false);
+                    return;
+                }
+
+                // Check Firestore for standard users
+                try {
+                    const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'clients'));
+                    const snapshot = await getDocs(q);
+                    let foundUser = null;
+
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        if (data.username === user && data.password === pass) {
+                            foundUser = { ...data, id: doc.id, role: 'user' };
+                        }
+                    });
+
+                    if (foundUser) {
+                        onLogin(foundUser);
+                    } else {
+                        setError('Usuário ou senha incorretos.');
+                    }
+                } catch (err) {
+                    console.error("Login Error:", err);
+                    setError('Erro de comunicação. Tente novamente.');
+                }
+                setLoading(false);
+            };
+
+            return (
+                <div className="min-h-screen flex items-center justify-center relative overflow-hidden login-bg">
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+                    
+                    <div className="glass-panel p-8 rounded-3xl w-full max-w-md relative z-10 mx-4 shadow-2xl border-zinc-700/50 anim-zoom">
+                        <div className="text-center mb-8 relative">
+                            <div className="w-16 h-16 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/20 text-black mx-auto mb-4">
+                                <DollarSign size={32} strokeWidth={2.5}/>
+                            </div>
+                            <h1 className="text-2xl font-bold text-white tracking-tight">FinançasPro</h1>
+                            <p className="text-zinc-400 text-sm mt-1">Enterprise SaaS Edition</p>
+                        </div>
+                        
+                        {firebaseError && (
+                            <div className="bg-red-500/10 border border-red-500/20 text-red-200 text-xs p-4 rounded-xl mb-4 text-center">
+                                <p className="font-bold mb-1">Erro de Conexão</p>
+                                <p>Não foi possível conectar ao servidor de dados.</p>
+                            </div>
+                        )}
+
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <div className="space-y-1">
+                                <label className="text-xs font-bold text-zinc-500 ml-1 uppercase">Usuário</label>
+                                <div className="relative">
+                                    <User size={18} className="absolute left-3 top-3.5 text-zinc-500"/>
+                                    <input type="text" value={user} onChange={e=>setUser(e.target.value)} className="w-full bg-zinc-950/50 border border-zinc-700 p-3 pl-10 rounded-xl text-white outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 transition-all" placeholder="Seu usuário" required/>
+                                </div>
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-xs font-bold text-zinc-500 ml-1 uppercase">Senha</label>
+                                <div className="relative">
+                                    <Lock size={18} className="absolute left-3 top-3.5 text-zinc-500"/>
+                                    <input type="password" value={pass} onChange={e=>setPass(e.target.value)} className="w-full bg-zinc-950/50 border border-zinc-700 p-3 pl-10 rounded-xl text-white outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 transition-all" placeholder="••••••••" required/>
+                                </div>
+                            </div>
+
+                            {error && <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-xs p-3 rounded-lg text-center font-medium flex items-center justify-center gap-2"><AlertTriangle size={14}/> {error}</div>}
+
+                            <button type="submit" disabled={loading} className="btn-primary w-full py-3.5 rounded-xl font-bold text-white shadow-xl tracking-wide disabled:opacity-50 disabled:cursor-not-allowed mt-4 flex justify-center items-center gap-2">
+                                {loading ? <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> Acessando...</> : 'ENTRAR NO SISTEMA'}
+                            </button>
+                        </form>
+                        
+                        <div className="mt-8 text-center">
+                            <p className="text-xs text-zinc-600">© 2025 FinançasPro Enterprise</p>
+                        </div>
+                    </div>
+                </div>
+            )
+        }
+
+        const AdminPanel = ({ onLogout, onAccessUser }) => {
+            const [users, setUsers] = useState([]);
+            const [newUserModal, setNewUserModal] = useState(false);
+            const [formData, setFormData] = useState({ username: '', password: '' });
+
+            useEffect(() => {
+                const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'clients'));
+                const unsubscribe = onSnapshot(q, (snap) => {
+                    const list = [];
+                    snap.forEach(d => list.push({ ...d.data(), id: d.id }));
+                    setUsers(list);
+                });
+                return () => unsubscribe();
+            }, []);
+
+            const handleCreateUser = async (e) => {
+                e.preventDefault();
+                const newUser = {
+                    username: formData.username,
+                    password: formData.password,
+                    createdAt: new Date().toISOString(),
+                    // Default Data Structure
+                    appData: {
+                        initialBalance: 0,
+                        transactions: [],
+                        fixedBills: [],
+                        categories: INITIAL_CATS,
+                        goals: {},
+                        cards: []
+                    }
+                };
+                
+                // Use username as ID to prevent duplicates easily
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'clients', formData.username), newUser);
+                setNewUserModal(false);
+                setFormData({ username: '', password: '' });
+            };
+
+            const handleDelete = async (id) => {
+                if(confirm('Tem certeza que deseja remover este usuário e todos os dados dele?')) {
+                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'clients', id));
+                }
+            };
+
+            return (
+                <div className="min-h-screen bg-zinc-950 text-white p-6 lg:p-12">
+                    <div className="max-w-6xl mx-auto space-y-8">
+                        <div className="flex justify-between items-center glass-panel p-6 rounded-2xl">
+                            <div>
+                                <h1 className="text-2xl font-bold text-emerald-400 flex items-center gap-3"><Lock/> Painel Administrativo</h1>
+                                <p className="text-zinc-500">Gerenciamento de Clientes SaaS</p>
+                            </div>
+                            <div className="flex gap-4">
+                                <button onClick={() => setNewUserModal(true)} className="btn-primary px-6 py-2 rounded-xl font-bold text-sm flex items-center gap-2"><Plus size={18}/> Novo Cliente</button>
+                                <button onClick={onLogout} className="bg-zinc-800 hover:bg-red-900/30 text-zinc-400 hover:text-red-400 px-4 py-2 rounded-xl transition-all"><LogOut size={20}/></button>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {users.map(u => (
+                                <div key={u.id} className="glass-panel p-6 rounded-2xl hover:border-zinc-600 transition-all group">
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div className="w-12 h-12 bg-zinc-800 rounded-full flex items-center justify-center text-emerald-500 font-bold text-xl uppercase">
+                                            {u.username.substring(0,2)}
+                                        </div>
+                                        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button onClick={() => handleDelete(u.id)} className="p-2 hover:bg-red-500/20 text-zinc-500 hover:text-red-400 rounded-lg"><Trash2 size={16}/></button>
+                                        </div>
+                                    </div>
+                                    <h3 className="text-xl font-bold capitalize mb-1">{u.username}</h3>
+                                    <div className="flex items-center gap-2 text-xs text-zinc-500 mb-6 font-mono">
+                                        <Key size={12}/> Senha: {u.password}
+                                    </div>
+                                    <button onClick={() => onAccessUser(u)} className="w-full py-3 bg-zinc-800 hover:bg-emerald-500/10 text-zinc-300 hover:text-emerald-400 border border-zinc-700 hover:border-emerald-500/30 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2">
+                                        Acessar Painel <ChevronRight size={16}/>
+                                    </button>
+                                </div>
+                            ))}
+                            {users.length === 0 && (
+                                <div className="col-span-full py-20 text-center text-zinc-600">
+                                    <Users size={48} className="mx-auto mb-4 opacity-20"/>
+                                    <p>Nenhum cliente cadastrado.</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    <Modal isOpen={newUserModal} onClose={() => setNewUserModal(false)} title="Novo Cliente">
+                        <form onSubmit={handleCreateUser} className="space-y-4">
+                            <div className="space-y-1">
+                                <label className="text-xs font-bold text-zinc-500 ml-1">NOME DE USUÁRIO</label>
+                                <input type="text" required value={formData.username} onChange={e => setFormData({...formData, username: e.target.value})} className="w-full bg-zinc-950/50 border border-zinc-700 p-3 rounded-xl text-white outline-none focus:border-emerald-500 transition-all" placeholder="ex: joaosilva"/>
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-xs font-bold text-zinc-500 ml-1">SENHA DE ACESSO</label>
+                                <input type="text" required value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} className="w-full bg-zinc-950/50 border border-zinc-700 p-3 rounded-xl text-white outline-none focus:border-emerald-500 transition-all" placeholder="Defina uma senha forte"/>
+                            </div>
+                            <button type="submit" className="btn-primary w-full py-3 rounded-xl font-bold text-white mt-4">CRIAR CLIENTE</button>
+                        </form>
+                    </Modal>
+                </div>
+            );
+        };
+
+        // --- CORE APPLICATION COMPONENTS (Extracted from Original) ---
+        // (Keeping most original code but adapting for Props instead of LocalStorage)
 
         const CardWidget = ({ title, value, icon: Icon, type, subtitle, delay }) => {
             const colorClass = type === 'income' ? 'text-emerald-400' : type === 'expense' ? 'text-red-400' : type === 'credit' ? 'text-purple-400' : 'text-blue-400';
@@ -289,6 +530,9 @@
                 </div>
             );
         };
+        
+        // ... (CardsView, GoalsPanel, Trans, Reports, Fixed are reused from original but simplified for brevity in this response structure, 
+        // effectively they are the same props-based components. I will include their essential structure here)
 
         const CardsView = ({ cards, transactions, setEditingCard, setCardForm, setIsCardModalOpen, deleteCard, getCardStats, getCardInvoices, setInvoiceDetailModal, payInvoice }) => {
             return (
@@ -509,22 +753,28 @@
             </div> 
         );
 
-        function FinanceAppV10() {
+        function FinanceAppV10({ initialData, onDataChange, currentUser, onLogout }) {
             const [activeTab, setActiveTab] = useState('dashboard');
             const [viewDate, setViewDate] = useState(new Date()); 
             const currentMonth = useMemo(() => viewDate.toISOString().slice(0, 7), [viewDate]);
-            const [initialBalance, setInitialBalance] = useState(() => parseFloat(localStorage.getItem('initialBalance_v8')) || 0);
-            const [transactions, setTransactions] = useState(() => JSON.parse(localStorage.getItem('transactions_v8')) || []);
-            const [fixedBills, setFixedBills] = useState(() => JSON.parse(localStorage.getItem('fixedBills_v8')) || []);
-            const [categories, setCategories] = useState(() => JSON.parse(localStorage.getItem('categories_v8')) || INITIAL_CATS);
-            const [goals, setGoals] = useState(() => JSON.parse(localStorage.getItem('goals_v8')) || {});
-            const [cards, setCards] = useState(() => JSON.parse(localStorage.getItem('cards_v8')) || []);
+            
+            // Initialize from Props (Firestore) instead of LocalStorage
+            const [initialBalance, setInitialBalance] = useState(initialData?.initialBalance || 0);
+            const [transactions, setTransactions] = useState(initialData?.transactions || []);
+            const [fixedBills, setFixedBills] = useState(initialData?.fixedBills || []);
+            const [categories, setCategories] = useState(initialData?.categories || INITIAL_CATS);
+            const [goals, setGoals] = useState(initialData?.goals || {});
+            const [cards, setCards] = useState(initialData?.cards || []);
+
+            // Modals
             const [isTxModalOpen, setIsTxModalOpen] = useState(false);
             const [isFixedModalOpen, setIsFixedModalOpen] = useState(false);
             const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
             const [isCardModalOpen, setIsCardModalOpen] = useState(false);
             const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
             const [invoiceDetailModal, setInvoiceDetailModal] = useState(null);
+            
+            // Forms
             const [editingTx, setEditingTx] = useState(null);
             const [editingFixed, setEditingFixed] = useState(null);
             const [editingCard, setEditingCard] = useState(null);
@@ -534,13 +784,21 @@
             const [newCategory, setNewCategory] = useState('');
             const fileInputRef = useRef(null);
 
+            // AUTO SAVE TO PARENT (FIRESTORE)
             useEffect(() => {
-                localStorage.setItem('transactions_v8', JSON.stringify(transactions));
-                localStorage.setItem('fixedBills_v8', JSON.stringify(fixedBills));
-                localStorage.setItem('categories_v8', JSON.stringify(categories));
-                localStorage.setItem('initialBalance_v8', initialBalance);
-                localStorage.setItem('goals_v8', JSON.stringify(goals));
-                localStorage.setItem('cards_v8', JSON.stringify(cards));
+                const updatedData = {
+                    initialBalance,
+                    transactions,
+                    fixedBills,
+                    categories,
+                    goals,
+                    cards
+                };
+                // Debounce simple save
+                const timer = setTimeout(() => {
+                    onDataChange(updatedData);
+                }, 1000);
+                return () => clearTimeout(timer);
             }, [transactions, fixedBills, categories, initialBalance, goals, cards]);
 
             const todayStr = new Date().toISOString().slice(0, 10);
@@ -571,6 +829,7 @@
             const totalCreditUsed = cards.reduce((acc, card) => acc + getCardStats(card.id).spent, 0);
             const changeMonth = (offset) => { setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + offset, 1)); };
 
+            // HANDLERS (Same logic, updating state which triggers useEffect save)
             const handleSaveTx = (e) => {
                 e.preventDefault(); const baseValue = parseFloat(txForm.value); if (!txForm.description || isNaN(baseValue)) return;
                 if (txForm.method === 'Cartão Crédito' && txForm.cardId) {
@@ -611,58 +870,84 @@
             const handleUpdateGoal = (cat, val) => setGoals(prev => ({ ...prev, [cat]: parseFloat(val) }));
             const handleExport = () => { const data = JSON.stringify({ initialBalance, transactions, fixedBills, categories, goals, cards, v: '10' }); const blob = new Blob([data], { type: 'application/json' }); const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = `backup_financas_v10_${todayStr}.json`; document.body.appendChild(link); link.click(); document.body.removeChild(link); };
             const handleExportExcel = () => { const headers = ["Data", "Descrição", "Valor", "Tipo", "Categoria", "Método", "Parcela", "Status"]; const rows = transactions.map(t => [ t.date, `"${t.description.replace(/"/g, '""')}"`, t.value.toFixed(2).replace('.', ','), t.type === 'income' ? 'Entrada' : 'Saída', t.category, t.method, t.installmentNumber || '', t.isPaid ? 'Pago' : 'Pendente' ]); const csvContent = "\uFEFF" + [headers.join(";"), ...rows.map(r => r.join(";"))].join("\n"); const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = `relatorio_financas_${todayStr}.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link); };
-            const handleImport = (e) => { const file = e.target.files[0]; if (!file) return; const r = new FileReader(); r.onload = (ev) => { try { const d = JSON.parse(ev.target.result); if (d.transactions && confirm('Restaurar dados? Isso substituirá os atuais.')) { setInitialBalance(d.initialBalance || 0); setTransactions(d.transactions || []); setFixedBills(d.fixedBills || []); setCategories(d.categories || INITIAL_CATS); setGoals(d.goals || {}); setCards(d.cards || []); alert('Sistema restaurado com sucesso!'); setIsConfigModalOpen(false); } } catch { alert('Erro ao ler arquivo.'); } }; r.readAsText(file); e.target.value = null; };
+            
+            // Simplified import logic for SaaS version (overwrite cloud data)
+            const handleImport = (e) => { 
+                const file = e.target.files[0]; 
+                if (!file) return; 
+                const r = new FileReader(); 
+                r.onload = (ev) => { 
+                    try { 
+                        const d = JSON.parse(ev.target.result); 
+                        if (d.transactions && confirm('ATENÇÃO: Isso substituirá os dados na nuvem pelos dados deste arquivo. Continuar?')) { 
+                            setInitialBalance(d.initialBalance || 0); 
+                            setTransactions(d.transactions || []); 
+                            setFixedBills(d.fixedBills || []); 
+                            setCategories(d.categories || INITIAL_CATS); 
+                            setGoals(d.goals || {}); 
+                            setCards(d.cards || []); 
+                            alert('Dados importados com sucesso! Salvando na nuvem...'); 
+                            setIsConfigModalOpen(false); 
+                        } 
+                    } catch { alert('Erro ao ler arquivo.'); } 
+                }; 
+                r.readAsText(file); 
+                e.target.value = null; 
+            };
+            
             const NavBtn = ({id, icon:I, label}) => ( <button onClick={()=>{setActiveTab(id);setIsMobileMenuOpen(false)}} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 font-medium ${activeTab===id ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900/50'}`}><I size={20}/> <span>{label}</span></button> );
 
             return (
-                <AppLoader>
-                    <div className="flex min-h-screen font-sans selection:bg-emerald-500/30 selection:text-emerald-400">
-                        <aside className="hidden lg:flex w-72 flex-col p-6 border-r border-zinc-800 bg-black/40 backdrop-blur-xl sticky top-0 h-screen no-print z-20">
-                            <h1 className="text-2xl font-bold mb-10 flex items-center gap-3 tracking-tight text-white"><div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20 text-black"><DollarSign size={24}/></div> FinançasPro</h1>
-                            <nav className="space-y-2 flex-1">
-                                <NavBtn id="dashboard" icon={LayoutDashboard} label="Visão Geral"/>
-                                <NavBtn id="cards" icon={CreditCard} label="Cartões"/>
-                                <NavBtn id="transactions" icon={FileText} label="Movimentações"/>
-                                <NavBtn id="goals" icon={Target} label="Metas"/>
-                                <NavBtn id="fixed" icon={Calendar} label="Fixas"/>
-                                <NavBtn id="reports" icon={TrendingUp} label="Relatórios"/>
-                            </nav>
-                            <button onClick={()=>setIsConfigModalOpen(true)} className="glass-panel p-3 rounded-xl flex items-center gap-3 text-zinc-400 hover:text-white transition-all hover:bg-zinc-800/50 group"><Settings size={20} className="group-hover:rotate-90 transition-transform duration-500"/> Configurações</button>
-                        </aside>
+                <div className="flex min-h-screen font-sans selection:bg-emerald-500/30 selection:text-emerald-400">
+                    <aside className="hidden lg:flex w-72 flex-col p-6 border-r border-zinc-800 bg-black/40 backdrop-blur-xl sticky top-0 h-screen no-print z-20">
+                        <h1 className="text-xl font-bold mb-10 flex items-center gap-3 tracking-tight text-white"><div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-lg flex items-center justify-center shadow-lg shadow-emerald-500/20 text-black"><DollarSign size={20}/></div> FinançasPro</h1>
+                        <nav className="space-y-2 flex-1">
+                            <NavBtn id="dashboard" icon={LayoutDashboard} label="Visão Geral"/>
+                            <NavBtn id="cards" icon={CreditCard} label="Cartões"/>
+                            <NavBtn id="transactions" icon={FileText} label="Movimentações"/>
+                            <NavBtn id="goals" icon={Target} label="Metas"/>
+                            <NavBtn id="fixed" icon={Calendar} label="Fixas"/>
+                            <NavBtn id="reports" icon={TrendingUp} label="Relatórios"/>
+                        </nav>
+                        <div className="space-y-2">
+                             <button onClick={()=>setIsConfigModalOpen(true)} className="w-full text-left p-3 rounded-xl flex items-center gap-3 text-zinc-400 hover:text-white transition-all hover:bg-zinc-800/50 group"><Settings size={20}/> Configurações</button>
+                             <button onClick={onLogout} className="w-full text-left p-3 rounded-xl flex items-center gap-3 text-red-400 hover:text-red-300 transition-all hover:bg-red-900/10 group border border-transparent hover:border-red-900/30"><LogOut size={20}/> Sair ({currentUser})</button>
+                        </div>
+                    </aside>
 
-                        <div className="lg:hidden fixed top-0 w-full bg-black/80 backdrop-blur-xl border-b border-zinc-800 z-50 px-4 py-3 flex justify-between items-center shadow-2xl no-print">
-                            <div className="font-bold flex gap-2 text-zinc-100 items-center"><DollarSign className="text-emerald-500"/> FinançasPro <span className="text-xs bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-400">V10.4</span></div>
-                            <button onClick={()=>setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-zinc-300 p-2 active:scale-95 transition-transform">{isMobileMenuOpen?<X/>:<Menu/>}</button>
+                    <div className="lg:hidden fixed top-0 w-full bg-black/80 backdrop-blur-xl border-b border-zinc-800 z-40 px-4 py-3 flex justify-between items-center shadow-2xl no-print">
+                        <div className="font-bold flex gap-2 text-zinc-100 items-center"><DollarSign className="text-emerald-500"/> FinançasPro <span className="text-xs bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-400">Cloud</span></div>
+                        <button onClick={()=>setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-zinc-300 p-2 active:scale-95 transition-transform">{isMobileMenuOpen?<X/>:<Menu/>}</button>
+                    </div>
+
+                    {isMobileMenuOpen && (
+                        <div className="fixed inset-0 bg-black/95 z-30 pt-24 px-6 lg:hidden no-print animate-in slide-in-from-top-10 backdrop-blur-xl">
+                            <nav className="space-y-4"><NavBtn id="dashboard" icon={LayoutDashboard} label="Visão Geral"/><NavBtn id="cards" icon={CreditCard} label="Cartões"/><NavBtn id="transactions" icon={FileText} label="Movimentações"/><NavBtn id="goals" icon={Target} label="Metas"/><NavBtn id="fixed" icon={Calendar} label="Fixas"/><NavBtn id="reports" icon={TrendingUp} label="Relatórios"/><button onClick={()=>{setIsConfigModalOpen(true);setIsMobileMenuOpen(false)}} className="flex gap-3 text-zinc-400 p-4 w-full border-t border-zinc-800 mt-4"><Settings/> Configurações</button><button onClick={onLogout} className="flex gap-3 text-red-400 p-4 w-full border-t border-zinc-800"><LogOut/> Sair</button></nav>
+                        </div>
+                    )}
+
+                    <main className="flex-1 p-4 lg:p-8 mt-16 lg:mt-0 overflow-x-hidden">
+                        <div className="flex items-center justify-between mb-8 glass-panel p-2 rounded-2xl relative z-30 shadow-2xl lg:shadow-none border-zinc-800/80 mx-auto max-w-sm lg:max-w-none">
+                            <button onClick={() => changeMonth(-1)} className="p-3 hover:bg-zinc-800/50 rounded-xl text-zinc-400 hover:text-white transition-all active:scale-95"><ChevronLeft size={20}/></button>
+                            <div className="text-center flex flex-col items-center">
+                                <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-0.5">Período</span>
+                                <span className="text-zinc-100 font-bold text-lg capitalize flex items-center gap-2">{getMonthName(currentMonth)} <ChevronDown size={14} className="text-zinc-600"/></span>
+                            </div>
+                            <button onClick={() => changeMonth(1)} className="p-3 hover:bg-zinc-800/50 rounded-xl text-zinc-400 hover:text-white transition-all active:scale-95"><ChevronRight size={20}/></button>
                         </div>
 
-                        {isMobileMenuOpen && (
-                            <div className="fixed inset-0 bg-black/95 z-40 pt-24 px-6 lg:hidden no-print animate-in slide-in-from-top-10 backdrop-blur-xl">
-                                <nav className="space-y-4"><NavBtn id="dashboard" icon={LayoutDashboard} label="Visão Geral"/><NavBtn id="cards" icon={CreditCard} label="Cartões"/><NavBtn id="transactions" icon={FileText} label="Movimentações"/><NavBtn id="goals" icon={Target} label="Metas"/><NavBtn id="fixed" icon={Calendar} label="Fixas"/><NavBtn id="reports" icon={TrendingUp} label="Relatórios"/><button onClick={()=>{setIsConfigModalOpen(true);setIsMobileMenuOpen(false)}} className="flex gap-3 text-zinc-400 p-4 w-full border-t border-zinc-800 mt-4"><Settings/> Configurações</button></nav>
-                            </div>
-                        )}
+                        <div className="animate-in fade-in duration-500 slide-in-from-bottom-4">
+                            {activeTab === 'dashboard' && <Dashboard transactions={transactions} fixedBills={fixedBills} monthIncome={monthIncome} monthExpense={monthExpense} accountBalance={accountBalance} totalCreditUsed={totalCreditUsed} currentMonth={currentMonth} openTxModal={openTxModal} />}
+                            {activeTab === 'cards' && <CardsView cards={cards} transactions={transactions} setEditingCard={setEditingCard} setCardForm={setCardForm} setIsCardModalOpen={setIsCardModalOpen} deleteCard={deleteCard} getCardStats={getCardStats} getCardInvoices={getCardInvoices} setInvoiceDetailModal={setInvoiceDetailModal} payInvoice={payInvoice} />}
+                            {activeTab === 'transactions' && <Trans transactions={transactions} deleteTx={deleteTx} openTxModal={openTxModal} currentMonth={currentMonth} />}
+                            {activeTab === 'goals' && <GoalsPanel categories={categories} goals={goals} transactions={transactions} currentMonth={currentMonth} onUpdateGoal={handleUpdateGoal} />}
+                            {activeTab === 'fixed' && <Fixed fixedBills={fixedBills} deleteFixed={deleteFixed} setEditingFixed={setEditingFixed} setFixedForm={setFixedForm} setIsFixedModalOpen={setIsFixedModalOpen} payFixed={payFixed} currentMonth={currentMonth} />}
+                            {activeTab === 'reports' && <Reports transactions={transactions} currentMonth={currentMonth} availMonths={[]} setFilterMonth={()=>{}} />}
+                        </div>
+                    </main>
 
-                        <main className="flex-1 p-4 lg:p-8 mt-16 lg:mt-0 overflow-x-hidden">
-                            <div className="flex items-center justify-between mb-8 glass-panel p-2 rounded-2xl sticky top-4 lg:static z-30 shadow-2xl lg:shadow-none border-zinc-800/80 mx-auto max-w-sm lg:max-w-none">
-                                <button onClick={() => changeMonth(-1)} className="p-3 hover:bg-zinc-800/50 rounded-xl text-zinc-400 hover:text-white transition-all active:scale-95"><ChevronLeft size={20}/></button>
-                                <div className="text-center flex flex-col items-center">
-                                    <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-0.5">Período</span>
-                                    <span className="text-zinc-100 font-bold text-lg capitalize flex items-center gap-2">{getMonthName(currentMonth)} <ChevronDown size={14} className="text-zinc-600"/></span>
-                                </div>
-                                <button onClick={() => changeMonth(1)} className="p-3 hover:bg-zinc-800/50 rounded-xl text-zinc-400 hover:text-white transition-all active:scale-95"><ChevronRight size={20}/></button>
-                            </div>
-
-                            <div className="animate-in fade-in duration-500 slide-in-from-bottom-4">
-                                {activeTab === 'dashboard' && <Dashboard transactions={transactions} fixedBills={fixedBills} monthIncome={monthIncome} monthExpense={monthExpense} accountBalance={accountBalance} totalCreditUsed={totalCreditUsed} currentMonth={currentMonth} openTxModal={openTxModal} />}
-                                {activeTab === 'cards' && <CardsView cards={cards} transactions={transactions} setEditingCard={setEditingCard} setCardForm={setCardForm} setIsCardModalOpen={setIsCardModalOpen} deleteCard={deleteCard} getCardStats={getCardStats} getCardInvoices={getCardInvoices} setInvoiceDetailModal={setInvoiceDetailModal} payInvoice={payInvoice} />}
-                                {activeTab === 'transactions' && <Trans transactions={transactions} deleteTx={deleteTx} openTxModal={openTxModal} currentMonth={currentMonth} />}
-                                {activeTab === 'goals' && <GoalsPanel categories={categories} goals={goals} transactions={transactions} currentMonth={currentMonth} onUpdateGoal={handleUpdateGoal} />}
-                                {activeTab === 'fixed' && <Fixed fixedBills={fixedBills} deleteFixed={deleteFixed} setEditingFixed={setEditingFixed} setFixedForm={setFixedForm} setIsFixedModalOpen={setIsFixedModalOpen} payFixed={payFixed} currentMonth={currentMonth} />}
-                                {activeTab === 'reports' && <Reports transactions={transactions} currentMonth={currentMonth} availMonths={[]} setFilterMonth={()=>{}} />}
-                            </div>
-                        </main>
-
-                        {/* MODAIS - GLASSMOPRHISM */}
-                        <Modal isOpen={isTxModalOpen} onClose={()=>setIsTxModalOpen(false)} title={editingTx ? "Editar Lançamento" : "Novo Lançamento"}>
+                    {/* MODAIS */}
+                    <Modal isOpen={isTxModalOpen} onClose={()=>setIsTxModalOpen(false)} title={editingTx ? "Editar Lançamento" : "Novo Lançamento"}>
                             <form onSubmit={handleSaveTx} className="space-y-5">
                                 <div className="grid grid-cols-2 gap-3 p-1 bg-zinc-950/50 rounded-xl border border-zinc-800">
                                     <button type="button" onClick={()=>setTxForm({...txForm, type:'income'})} className={`p-2.5 rounded-lg text-sm font-semibold transition-all duration-300 ${txForm.type==='income'?'bg-emerald-500 text-black shadow-lg shadow-emerald-900/20':'text-zinc-400 hover:text-zinc-200'}`}>Entrada</button>
@@ -698,9 +983,9 @@
                                 )}
                                 <button type="submit" className="btn-primary w-full py-3.5 rounded-xl font-bold text-white text-sm shadow-xl tracking-wide">CONFIRMAR LANÇAMENTO</button>
                             </form>
-                        </Modal>
+                    </Modal>
 
-                        <Modal isOpen={isCardModalOpen} onClose={()=>setIsCardModalOpen(false)} title={editingCard ? "Editar Cartão" : "Novo Cartão"}>
+                    <Modal isOpen={isCardModalOpen} onClose={()=>setIsCardModalOpen(false)} title={editingCard ? "Editar Cartão" : "Novo Cartão"}>
                             <form onSubmit={handleSaveCard} className="space-y-4">
                                 <input type="text" required placeholder="Nome do Cartão (Ex: Nubank)" className="w-full bg-zinc-950/30 border border-zinc-700/50 p-3 rounded-xl text-white outline-none focus:border-blue-500/50 transition-all" value={cardForm.name||''} onChange={e=>setCardForm({...cardForm, name:e.target.value})} />
                                 <input type="number" required placeholder="Limite Total (R$)" className="w-full bg-zinc-950/30 border border-zinc-700/50 p-3 rounded-xl text-white outline-none focus:border-blue-500/50 transition-all" value={cardForm.limit||''} onChange={e=>setCardForm({...cardForm, limit:e.target.value})} />
@@ -708,9 +993,9 @@
                                 <div><label className="text-xs text-zinc-500 font-bold mb-3 block ml-1">ESTILO VISUAL</label><div className="flex gap-3 justify-center">{CARD_GRADIENTS.map(g => (<button type="button" key={g} onClick={()=>setCardForm({...cardForm, gradient:g})} className={`w-12 h-12 rounded-2xl ${g} ${cardForm.gradient === g ? 'ring-2 ring-white scale-110 shadow-xl' : 'opacity-60 hover:opacity-100 hover:scale-105'} transition-all duration-300`}></button>))}</div></div>
                                 <button type="submit" className="btn-primary w-full py-3.5 rounded-xl font-bold text-white text-sm shadow-xl tracking-wide mt-2">SALVAR CARTÃO</button>
                             </form>
-                        </Modal>
-                        
-                        <Modal isOpen={!!invoiceDetailModal} onClose={()=>setInvoiceDetailModal(null)} title={`Fatura ${invoiceDetailModal ? getMonthName(invoiceDetailModal.month) : ''}`}>
+                    </Modal>
+
+                    <Modal isOpen={!!invoiceDetailModal} onClose={()=>setInvoiceDetailModal(null)} title={`Fatura ${invoiceDetailModal ? getMonthName(invoiceDetailModal.month) : ''}`}>
                             {invoiceDetailModal && (
                                 <div className="space-y-5">
                                     <div className="flex justify-between items-center bg-zinc-950/50 border border-zinc-800 p-4 rounded-xl shadow-inner"><span className="text-zinc-400 text-sm font-medium">Total da Fatura</span><span className="text-2xl font-bold text-zinc-100">{formatCurrency(invoiceDetailModal.total)}</span></div>
@@ -718,35 +1003,135 @@
                                     <button onClick={() => payInvoice(invoiceDetailModal.cardId, invoiceDetailModal.total, invoiceDetailModal.month)} className="w-full bg-emerald-600 hover:bg-emerald-500 py-3.5 rounded-xl font-bold text-white shadow-lg shadow-emerald-900/20 transition-all hover:-translate-y-1">REALIZAR PAGAMENTO</button>
                                 </div>
                             )}
-                        </Modal>
+                    </Modal>
 
-                        <Modal isOpen={isFixedModalOpen} onClose={()=>setIsFixedModalOpen(false)} title={editingFixed ? "Editar Conta Fixa" : "Nova Conta Fixa"}>
+                    <Modal isOpen={isFixedModalOpen} onClose={()=>setIsFixedModalOpen(false)} title={editingFixed ? "Editar Conta Fixa" : "Nova Conta Fixa"}>
                             <form onSubmit={handleSaveFixed} className="space-y-4">
                                 <input type="text" required placeholder="Nome (Ex: Aluguel)" className="w-full bg-zinc-950/30 border border-zinc-700/50 p-3 rounded-xl text-white outline-none focus:border-emerald-500/50 transition-all" value={fixedForm.name||''} onChange={e=>setFixedForm({...fixedForm, name:e.target.value})} />
                                 <input type="number" step="0.01" required placeholder="Valor (R$)" className="w-full bg-zinc-950/30 border border-zinc-700/50 p-3 rounded-xl text-white outline-none focus:border-emerald-500/50 transition-all" value={fixedForm.value||''} onChange={e=>setFixedForm({...fixedForm, value:e.target.value})} />
                                 <div className="grid grid-cols-2 gap-3"><input type="number" required placeholder="Dia Venc." className="w-full bg-zinc-950/30 border border-zinc-700/50 p-3 rounded-xl text-white outline-none focus:border-emerald-500/50 transition-all" value={fixedForm.dueDay||''} onChange={e=>setFixedForm({...fixedForm, dueDay:e.target.value})} /><select className="w-full bg-zinc-950/30 border border-zinc-700/50 p-3 rounded-xl text-white outline-none focus:border-emerald-500/50 transition-all appearance-none" value={fixedForm.category||'Contas Fixas'} onChange={e=>setFixedForm({...fixedForm, category:e.target.value})}>{categories.map(c=><option key={c} value={c} className="bg-zinc-900">{c}</option>)}</select></div>
                                 <button type="submit" className="btn-primary w-full py-3.5 rounded-xl font-bold text-white text-sm shadow-xl tracking-wide mt-2">SALVAR CONTA</button>
                             </form>
-                        </Modal>
+                    </Modal>
 
-                        <Modal isOpen={isConfigModalOpen} onClose={()=>setIsConfigModalOpen(false)} title="Configurações do Sistema">
+                    <Modal isOpen={isConfigModalOpen} onClose={()=>setIsConfigModalOpen(false)} title="Configurações do Sistema">
                             <div className="space-y-6">
                                 <div><h4 className="text-zinc-400 text-xs font-bold uppercase mb-2 ml-1">Saldo Inicial</h4><input type="number" value={initialBalance} onChange={e=>setInitialBalance(parseFloat(e.target.value)||0)} className="w-full bg-zinc-950/50 border border-zinc-700/50 p-3 rounded-xl text-white outline-none focus:border-emerald-500/50 transition-all font-mono text-lg"/></div>
                                 <div><h4 className="text-zinc-400 text-xs font-bold uppercase mb-2 ml-1">Categorias Personalizadas</h4><div className="flex gap-2 mb-3"><input type="text" placeholder="Nova categoria..." value={newCategory} onChange={e=>setNewCategory(e.target.value)} className="bg-zinc-950/50 border border-zinc-700/50 p-3 rounded-xl text-white w-full outline-none focus:border-emerald-500/50 transition-all"/><button onClick={()=>{if(newCategory){setCategories([...categories,newCategory]);setNewCategory('')}}} className="bg-emerald-600/20 hover:bg-emerald-600 text-emerald-500 hover:text-white p-3 rounded-xl transition-all border border-emerald-500/20"><Plus/></button></div><div className="flex flex-wrap gap-2">{categories.map(c=><span key={c} className="bg-zinc-800/50 border border-zinc-700/50 text-xs p-2 pl-3 rounded-lg flex items-center gap-2 text-zinc-300 shadow-sm">{c} <button onClick={()=>setCategories(categories.filter(x=>x!==c))} className="text-zinc-500 hover:text-red-400 transition-colors bg-black/20 rounded p-0.5"><X size={12}/></button></span>)}</div></div>
                                 <div className="grid grid-cols-2 gap-3 pt-6 border-t border-zinc-800/50">
                                     <button onClick={handleExport} className="glass-button p-4 rounded-2xl flex flex-col items-center gap-2 text-emerald-400 hover:text-emerald-300 hover:border-emerald-500/30"><Download size={24}/><span className="text-xs font-bold">Backup JSON</span></button>
                                     <button onClick={handleExportExcel} className="glass-button p-4 rounded-2xl flex flex-col items-center gap-2 text-green-400 hover:text-green-300 hover:border-green-500/30"><FileSpreadsheet size={24}/><span className="text-xs font-bold">Relatório Excel</span></button>
-                                    <button onClick={()=>fileInputRef.current.click()} className="glass-button p-4 rounded-2xl flex flex-col items-center gap-2 text-blue-400 hover:text-blue-300 hover:border-blue-500/30 col-span-2"><Upload size={24}/><span className="text-xs font-bold">Restaurar Dados</span><input type="file" hidden ref={fileInputRef} onChange={handleImport}/></button>
+                                    <button onClick={()=>fileInputRef.current.click()} className="glass-button p-4 rounded-2xl flex flex-col items-center gap-2 text-blue-400 hover:text-blue-300 hover:border-blue-500/30 col-span-2"><Upload size={24}/><span className="text-xs font-bold">Importar Arquivo</span><input type="file" hidden ref={fileInputRef} onChange={handleImport}/></button>
                                 </div>
                             </div>
-                        </Modal>
-                    </div>
-                </AppLoader>
+                    </Modal>
+                </div>
             );
         }
 
+        // --- MAIN APP ORCHESTRATOR ---
+        const MainApp = () => {
+            const [currentUser, setCurrentUser] = useState(null); 
+            const [targetUser, setTargetUser] = useState(null); 
+            const [isFirebaseReady, setIsFirebaseReady] = useState(false);
+            const [firebaseError, setFirebaseError] = useState(false);
+
+            // --- 1. FIREBASE ANONYMOUS AUTH INIT ---
+            useEffect(() => {
+                const initAuth = async () => {
+                    try {
+                        // Check if config is default placeholder
+                        if (!app || !auth) {
+                            setFirebaseError(true);
+                            return;
+                        }
+                        
+                        // We use anonymous auth just to establish a secure connection to Firestore
+                        await signInAnonymously(auth);
+                        setIsFirebaseReady(true);
+                    } catch (error) {
+                        console.error("Firebase Auth failed", error);
+                        setFirebaseError(true);
+                    }
+                };
+                initAuth();
+            }, []);
+
+            const handleDataChange = async (newData) => {
+                if (!currentUser && !targetUser) return;
+                
+                const userToSave = targetUser || currentUser;
+                
+                if (userToSave.role === 'admin' && !targetUser) {
+                    return; 
+                }
+
+                try {
+                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'clients', userToSave.username);
+                    await setDoc(docRef, { ...userToSave, appData: newData }, { merge: true });
+                } catch (e) {
+                    console.error("Error saving data", e);
+                }
+            };
+
+            const handleLogout = () => {
+                setCurrentUser(null);
+                setTargetUser(null);
+            };
+
+            // Loading State for Initial Connection
+            if (!isFirebaseReady) {
+                // If error detected (missing config), show login screen with error message instead of infinite loader
+                if (firebaseError) {
+                    return <AppLoader><LoginScreen onLogin={setCurrentUser} isFirebaseReady={false} firebaseError={true} /></AppLoader>;
+                }
+                
+                return (
+                    <AppLoader>
+                        <div className="flex flex-col items-center gap-4">
+                            <div className="loader-ring"></div>
+                            <p className="text-zinc-400 font-medium tracking-wider text-sm uppercase">Conectando ao Banco de Dados...</p>
+                        </div>
+                    </AppLoader>
+                );
+            }
+
+            if (!currentUser) {
+                return <AppLoader><LoginScreen onLogin={setCurrentUser} isFirebaseReady={isFirebaseReady} /></AppLoader>;
+            }
+
+            if (currentUser.role === 'admin' && !targetUser) {
+                return (
+                    <AppLoader>
+                        <AdminPanel 
+                            onLogout={handleLogout} 
+                            onAccessUser={(user) => setTargetUser(user)} 
+                        />
+                    </AppLoader>
+                );
+            }
+
+            const userToRender = targetUser || currentUser;
+            const data = userToRender.appData || {};
+
+            return (
+                <AppLoader>
+                    <FinanceAppV10 
+                        key={userToRender.username} 
+                        initialData={data} 
+                        currentUser={userToRender.username}
+                        onDataChange={handleDataChange}
+                        onLogout={() => {
+                            if (targetUser) setTargetUser(null); 
+                            else handleLogout(); 
+                        }}
+                    />
+                </AppLoader>
+            );
+        };
+
         const root = createRoot(document.getElementById('root'));
-        root.render(<FinanceAppV10 />);
+        root.render(<MainApp />);
     </script>
 </body>
 </html>
